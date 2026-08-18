@@ -8,24 +8,40 @@ public class Verity {
 		String greeting = getGreeting();
 		System.out.println(greeting);
 
-		String[] tasks = new String[100];
+		Task[] tasks = new Task[100];
 		int taskCount = 0;
 
 		String command = scanner.nextLine();
 		while (!command.equals("bye")) {
-			if (!command.equals("list")) {
+			String[] commandParts = command.split(" ");
+			if (commandParts[0].equals("mark")) {
+				int taskNumber = Integer.parseInt(commandParts[1]) - 1;
+				tasks[taskNumber].markAsDone();
+				System.out.println(horizLine);
+				System.out.println("Nice! I've marked this task as done:\n");
+				System.out.println(tasks[taskNumber].getStatus() + "\n" + horizLine);
+			} else if (commandParts[0].equals("unmark")) {
+				int taskNumber = Integer.parseInt(commandParts[1]) - 1;
+				tasks[taskNumber].markAsUndone();
+				System.out.println(horizLine);
+				System.out.println("Ok, I've marked this task as not done yet:\n");
+				System.out.println(tasks[taskNumber].getStatus() + "\n" + horizLine);
+
+			 } else if (commandParts[0].equals("list")) {
+				System.out.println(horizLine);
+				System.out.println("    Here are the tasks in your list:\n");
+				for (int i = 0; i < taskCount; ++i) {
+					System.out.println("    " + (i + 1) + ": " + tasks[i].getStatus());
+				}
+				System.out.println(horizLine);
+			} else {
 				String echo = horizLine
 						+ "     added: " + command + "\n"
 						+ horizLine;
 				System.out.println(echo);
-				tasks[taskCount] = command;
+				Task task = new Task(command);
+				tasks[taskCount] = task;
 				taskCount++;
-			} else {
-				System.out.println(horizLine);
-				for (int i = 0; i < taskCount; ++i) {
-					System.out.println("    " + (i + 1) + ": " + tasks[i]);
-				}
-				System.out.println(horizLine);
 			}
 			command = scanner.nextLine();
 		}
