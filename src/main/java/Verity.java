@@ -1,15 +1,32 @@
 import java.util.Scanner;
 public class Verity {
+	public static final String horizLine = "____________________________________________________________\n";
+
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
+
 		String greeting = getGreeting();
 		System.out.println(greeting);
+
+		String[] tasks = new String[100];
+		int taskCount = 0;
+
 		String command = scanner.nextLine();
 		while (!command.equals("bye")) {
-			String echo = "____________________________________________________________\n"
-					+ "    " + command + "\n"
-					+ "____________________________________________________________\n";
-			System.out.println(echo);
+			if (!command.equals("list")) {
+				String echo = horizLine
+						+ "     added: " + command + "\n"
+						+ horizLine;
+				System.out.println(echo);
+				tasks[taskCount] = command;
+				taskCount++;
+			} else {
+				System.out.println(horizLine);
+				for (int i = 0; i < taskCount; ++i) {
+					System.out.println("    " + (i + 1) + ": " + tasks[i]);
+				}
+				System.out.println(horizLine);
+			}
 			command = scanner.nextLine();
 		}
 		String exitStr = getExitString();
@@ -23,12 +40,12 @@ public class Verity {
 				+ " V V   EEEE   RRRR     I      T      Y\n"
 				+ "  V    E      R R      I      T      Y\n"
 				+ "  V    EEEEE  R  RR  IIIII    T      Y";
-		return "____________________________________________________________\n"
+		return horizLine
 				+ banner + "\n\n"
 				+ "Hello! I'm Verity.\n"
 				+ "I speak only the truth.\n"
 				+ "What can I do for you?\n"
-				+ "____________________________________________________________\n";
+				+ horizLine;
 	}
 
 	private static String getExitString() {
