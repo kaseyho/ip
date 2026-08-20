@@ -19,30 +19,30 @@ public class Verity {
 				int n = commandParts.length;
 				if (commandParts[0].equals("mark")) {
 					int taskNumber = getTaskNumber(commandParts, tasks.size());
-					tasks[taskNumber].markAsDone();
+					tasks.get(taskNumber).markAsDone();
 					System.out.println(horizLine);
 					System.out.println("Nice! I've marked this task as done:\n");
-					System.out.println(tasks[taskNumber].getStatus() + "\n" + horizLine);
+					System.out.println(tasks.get(taskNumber).getStatus() + "\n" + horizLine);
 				} else if (commandParts[0].equals("unmark")) {
 					int taskNumber = getTaskNumber(commandParts, tasks.size());
-					tasks[taskNumber].markAsUndone();
+					tasks.get(taskNumber).markAsUndone();
 					System.out.println(horizLine);
 					System.out.println("Ok, I've marked this task as not done yet:\n");
-					System.out.println(tasks[taskNumber].getStatus() + "\n" + horizLine);
+					System.out.println(tasks.get(taskNumber).getStatus() + "\n" + horizLine);
 
 				} else if (commandParts[0].equals("list")) {
 					System.out.println(horizLine);
 					System.out.println("    Here are the tasks in your list:\n");
 					for (int i = 0; i < tasks.size(); ++i) {
-						System.out.println("    " + (i + 1) + "." + tasks[i].getStatus());
+						System.out.println("    " + (i + 1) + "." + tasks.get(i).getStatus());
 					}
 					System.out.println(horizLine);
 				} else if (commandParts[0].equals("delete")) {
 					int taskNumber = getTaskNumber(commandParts, tasks.size());
-					//delete task logic
+					Task removedTask = tasks.remove(taskNumber);
 					System.out.println(horizLine);
 					System.out.println("Noted. I've removed this task:\n");
-					System.out.println(tasks[taskNumber].getStatus() + "\n" + horizLine);
+					System.out.println(removedTask.getStatus() + "\n" + horizLine);
 					System.out.println("Now you have " + tasks.size() + " tasks in the list.\n");
 					System.out.println(horizLine);
 				} else if (commandParts[0].equals("todo")) {
@@ -59,7 +59,7 @@ public class Verity {
 					}
 					String desc = description.toString();
 					Todo toDoEvent = new Todo(desc);
-					tasks[taskCount] = toDoEvent;
+					tasks.add(toDoEvent);
 					printAddedMessage(toDoEvent, tasks.size());
 				} else if (commandParts[0].equals("deadline")) {
 					if (n == 1) {
@@ -94,7 +94,7 @@ public class Verity {
 					}
 					String byDate = by.toString();
 					Deadline deadlineTask = new Deadline(desc, byDate);
-					tasks[taskCount] = deadlineTask;
+					tasks.add(deadlineTask);
 					printAddedMessage(deadlineTask, tasks.size());
 				} else if (commandParts[0].equals("event")) {
 					if (n == 1) {
@@ -146,8 +146,7 @@ public class Verity {
 					}
 					String toDate = to.toString();
 					Event eventTask = new Event(desc, fromDate, toDate);
-					tasks[taskCount] = eventTask;
-					taskCount++;
+					tasks.add(eventTask);
 					printAddedMessage(eventTask, tasks.size());
 				} else {
 					throw new VerityException("Start with todo, deadline or event.");
@@ -164,7 +163,7 @@ public class Verity {
 		System.out.println(exitStr);
 	}
 
-	private static int getTaskNumber(String[] commandParts, int taskCount) throws VerityException {
+	private static int getTaskNumber(String[] commandParts, int taskSize) throws VerityException {
 		if (commandParts.length < 2) {
 			throw new VerityException("Please provide a task number.");
 		}
@@ -176,7 +175,7 @@ public class Verity {
 			throw new VerityException("The task number must be a number.");
 		}
 
-		if (taskNumber < 0 || taskNumber >= taskCount) {
+		if (taskNumber < 0 || taskNumber >= taskSize) {
 			throw new VerityException("That task number does not exist.");
 		}
 		return taskNumber;
