@@ -1,8 +1,18 @@
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.Collections;
 public class Verity {
 	public static final String horizLine = "____________________________________________________________\n";
+
+	public enum Command {
+		TODO,
+		DEADLINE,
+		EVENT,
+		LIST,
+		MARK,
+		UNMARK,
+		DELETE,
+		BYE
+	}
 
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
@@ -11,33 +21,36 @@ public class Verity {
 		System.out.println(greeting);
 
 		ArrayList<Task> tasks = new ArrayList<>();
-
-		String command = scanner.nextLine();
-		while (!command.equals("bye")) {
+		while (true) {
+			String command = scanner.nextLine();
+			String[] commandParts = command.trim().split("\\s+");
 			try {
-				String[] commandParts = command.trim().split("\\s+");
+				Command commandType = parseCommand(commandParts[0]);
 				int n = commandParts.length;
-				if (commandParts[0].equals("mark")) {
+				if (commandType == Command.BYE) {
+					break;
+				}
+				else if (commandType == Command.MARK) {
 					int taskNumber = getTaskNumber(commandParts, tasks.size());
 					tasks.get(taskNumber).markAsDone();
 					System.out.println(horizLine);
 					System.out.println("Nice! I've marked this task as done:\n");
 					System.out.println(tasks.get(taskNumber).getStatus() + "\n" + horizLine);
-				} else if (commandParts[0].equals("unmark")) {
+				} else if (commandType == Command.UNMARK) {
 					int taskNumber = getTaskNumber(commandParts, tasks.size());
 					tasks.get(taskNumber).markAsUndone();
 					System.out.println(horizLine);
 					System.out.println("Ok, I've marked this task as not done yet:\n");
 					System.out.println(tasks.get(taskNumber).getStatus() + "\n" + horizLine);
 
-				} else if (commandParts[0].equals("list")) {
+				} else if (commandType == Command.LIST) {
 					System.out.println(horizLine);
 					System.out.println("    Here are the tasks in your list:\n");
 					for (int i = 0; i < tasks.size(); ++i) {
 						System.out.println("    " + (i + 1) + "." + tasks.get(i).getStatus());
 					}
 					System.out.println(horizLine);
-				} else if (commandParts[0].equals("delete")) {
+				} else if (commandType == Command.DELETE) {
 					int taskNumber = getTaskNumber(commandParts, tasks.size());
 					Task removedTask = tasks.remove(taskNumber);
 					System.out.println(horizLine);
@@ -45,7 +58,7 @@ public class Verity {
 					System.out.println(removedTask.getStatus() + "\n" + horizLine);
 					System.out.println("Now you have " + tasks.size() + " tasks in the list.\n");
 					System.out.println(horizLine);
-				} else if (commandParts[0].equals("todo")) {
+				} else if (commandType == Command.TODO) {
 					if (n == 1) {
 						throw new VerityException("The description of a todo cannot be empty.");
 					}
@@ -61,7 +74,7 @@ public class Verity {
 					Todo toDoEvent = new Todo(desc);
 					tasks.add(toDoEvent);
 					printAddedMessage(toDoEvent, tasks.size());
-				} else if (commandParts[0].equals("deadline")) {
+				} else if (commandType == Command.DEADLINE) {
 					if (n == 1) {
 						throw new VerityException("The description of a deadline cannot be empty.");
 					}
@@ -96,7 +109,7 @@ public class Verity {
 					Deadline deadlineTask = new Deadline(desc, byDate);
 					tasks.add(deadlineTask);
 					printAddedMessage(deadlineTask, tasks.size());
-				} else if (commandParts[0].equals("event")) {
+				} else if (commandType == Command.EVENT) {
 					if (n == 1) {
 						throw new VerityException("The description of an event cannot be empty.");
 					}
@@ -156,8 +169,6 @@ public class Verity {
 						+ "     Speak your truth. " + e.getMessage() + "\n"
 						+ horizLine);
 			}
-
-			command = scanner.nextLine();
 		}
 		String exitStr = getExitString();
 		System.out.println(exitStr);
@@ -208,5 +219,13 @@ public class Verity {
 		return "____________________________________________________________\n"
 				+ "    Bye. Hope to see you again soon!\n"
 				+ "____________________________________________________________\n";
+	}
+
+	private static Command parseCommand(String word) throws VerityException {
+		try {
+			return Command.valueOf(word.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			throw new VerityException("I don't know that command.");
+		}
 	}
 }
