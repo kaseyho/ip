@@ -14,6 +14,7 @@ public class Verity {
 		String command = scanner.nextLine();
 		while (!command.equals("bye")) {
 			String[] commandParts = command.split(" ");
+			int n = commandParts.length;
 			if (commandParts[0].equals("mark")) {
 				int taskNumber = Integer.parseInt(commandParts[1]) - 1;
 				tasks[taskNumber].markAsDone();
@@ -27,13 +28,86 @@ public class Verity {
 				System.out.println("Ok, I've marked this task as not done yet:\n");
 				System.out.println(tasks[taskNumber].getStatus() + "\n" + horizLine);
 
-			 } else if (commandParts[0].equals("list")) {
+			} else if (commandParts[0].equals("list")) {
 				System.out.println(horizLine);
 				System.out.println("    Here are the tasks in your list:\n");
 				for (int i = 0; i < taskCount; ++i) {
-					System.out.println("    " + (i + 1) + ": " + tasks[i].getStatus());
+					System.out.println("    " + (i + 1) + "." + tasks[i].getStatus());
 				}
 				System.out.println(horizLine);
+			} else if (commandParts[0].equals("todo")) {
+				// String concatenation optimization assisted by ChatGPT SOL
+				StringBuilder description =  new StringBuilder();
+				for (int i = 1; i < n; i++) {
+					if (i > 1) {
+						description.append(" ");
+					}
+					description.append(commandParts[i]);
+				}
+				String desc = description.toString();
+				Todo toDoEvent = new Todo(desc);
+				tasks[taskCount] = toDoEvent;
+				taskCount++;
+				printAddedMessage(toDoEvent, taskCount);
+			} else if (commandParts[0].equals("deadline")) {
+				StringBuilder description = new StringBuilder();
+				int i = 1;
+				while (!commandParts[i].equals("/by")) {
+					if (i > 1) {
+						description.append(" ");
+					}
+					description.append(commandParts[i]);
+					i++;
+				}
+				String desc = description.toString();
+				i++;
+				StringBuilder by = new StringBuilder();
+				for (int j = i; j < n; j++) {
+					if (j > i) {
+						by.append(" ");
+					}
+					by.append(commandParts[j]);
+				}
+				String byDate = by.toString();
+				Deadline deadlineTask = new Deadline(desc, byDate);
+				tasks[taskCount] = deadlineTask;
+				taskCount++;
+				printAddedMessage(deadlineTask, taskCount);
+			} else if (commandParts[0].equals("event")) {
+				StringBuilder description = new StringBuilder();
+				int i = 1;
+				while (!commandParts[i].equals("/from")) {
+					if (i > 1) {
+						description.append(" ");
+					}
+					description.append(commandParts[i]);
+					i++;
+				}
+				String desc = description.toString();
+				i++;
+				StringBuilder from = new StringBuilder();
+				int j = i;
+				while (!commandParts[j].equals("/to")) {
+					if (j > i) {
+						from.append(" ");
+					}
+					from.append(commandParts[j]);
+					j++;
+				}
+				String fromDate = from.toString();
+				j++;
+				StringBuilder to = new StringBuilder();
+				for (int k = j; k < n; k++) {
+					if (k > j) {
+						to.append(" ");
+					}
+					to.append(commandParts[k]);
+				}
+				String toDate = to.toString();
+				Event eventTask = new Event(desc, fromDate, toDate);
+				tasks[taskCount] = eventTask;
+				taskCount++;
+				printAddedMessage(eventTask, taskCount);
 			} else {
 				String echo = horizLine
 						+ "     added: " + command + "\n"
@@ -47,6 +121,14 @@ public class Verity {
 		}
 		String exitStr = getExitString();
 		System.out.println(exitStr);
+	}
+
+	private static void printAddedMessage(Task task, int taskCount) {
+		System.out.println(horizLine
+				+ "     Got it. I've added this task:\n"
+				+ "       " + task.getStatus() + "\n"
+				+ "     Now you have " + taskCount + " tasks in the list.\n"
+				+ horizLine);
 	}
 
 	private static String getGreeting() {

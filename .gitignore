@@ -20,4 +20,5 @@ _temp/
 text-ui-test/EXPECTED-UNIX.TXT
 
 # Codex skills
-.codex/skills/present-changes-visually
+.codex
+test
