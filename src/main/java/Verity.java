@@ -21,14 +21,23 @@ public class Verity {
 
 	private static final Path DATA_FILE_PATH = Path.of("data", "verity.txt");
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
 
 		String greeting = getGreeting();
 		System.out.println(greeting);
 
 		ArrayList<Task> tasks = new ArrayList<>();
-		List<String> savedTaskLines = readTaskLinesFromFile();
+		List<String> savedTaskLines;
+		try {
+			savedTaskLines = readTaskLinesFromFile();
+		} catch (IOException exception) {
+			System.out.println(horizLine
+					+ "     I could not load your saved tasks.\n"
+					+ "     Please check the data file and try again.\n"
+					+ horizLine);
+			return;
+		}
 		while (true) {
 			String command = scanner.nextLine();
 			String[] commandParts = command.trim().split("\\s+");
@@ -186,13 +195,23 @@ public class Verity {
 	 * Writes the supplied contents to the data file.
 	 *
 	 * @param fileContents Contents to write to the data file.
-	 * @throws IOException If the data file cannot be written.
+	 * @throws IOException If the data directory or file cannot be written.
 	 */
 	private static void writeToFile(String fileContents) throws IOException {
+		Files.createDirectories(DATA_FILE_PATH.getParent());
 		Files.writeString(DATA_FILE_PATH, fileContents, StandardCharsets.UTF_8);
 	}
 
+	/**
+	 * Returns the task lines stored in the data file, or an empty list if the file does not exist.
+	 *
+	 * @return Task lines stored in the data file.
+	 * @throws IOException If the data file exists but cannot be read.
+	 */
 	private static List<String> readTaskLinesFromFile() throws IOException {
+		if (Files.notExists(DATA_FILE_PATH)) {
+			return new ArrayList<>();
+		}
 		return Files.readAllLines(DATA_FILE_PATH, StandardCharsets.UTF_8);
 	}
 
