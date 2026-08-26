@@ -10,4 +10,9 @@ public class Deadline extends Task {
     public String getStatus() {
         return "[D]" + super.getStatus() + " (by: " + by + ")";
     }
+
+    @Override
+    public String serialize() {
+        return String.join("\t", "D", getStorageStatus(), description, by);
+    }
 }
