@@ -3,6 +3,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 public class Verity {
 	public static final String horizLine = "____________________________________________________________\n";
@@ -20,13 +21,14 @@ public class Verity {
 
 	private static final Path DATA_FILE_PATH = Path.of("data", "verity.txt");
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		Scanner scanner = new Scanner(System.in);
 
 		String greeting = getGreeting();
 		System.out.println(greeting);
 
 		ArrayList<Task> tasks = new ArrayList<>();
+		List<String> savedTaskLines = readTaskLinesFromFile();
 		while (true) {
 			String command = scanner.nextLine();
 			String[] commandParts = command.trim().split("\\s+");
@@ -188,6 +190,10 @@ public class Verity {
 	 */
 	private static void writeToFile(String fileContents) throws IOException {
 		Files.writeString(DATA_FILE_PATH, fileContents, StandardCharsets.UTF_8);
+	}
+
+	private static List<String> readTaskLinesFromFile() throws IOException {
+		return Files.readAllLines(DATA_FILE_PATH, StandardCharsets.UTF_8);
 	}
 
 	private static int getTaskNumber(String[] commandParts, int taskSize) throws VerityException {
