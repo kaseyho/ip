@@ -13,4 +13,10 @@ public class Event extends Task {
         return "[E]" + super.getStatus() + " (from: " + fromDate + " to: " + toDate + ")";
     }
 
+    @Override
+    public String serialize() {
+        return String.join(
+                "\t", "E", getStorageStatus(), description, fromDate, toDate);
+    }
+
 }
