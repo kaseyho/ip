@@ -1,3 +1,7 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Scanner;
 public class Verity {
@@ -13,6 +17,8 @@ public class Verity {
 		DELETE,
 		BYE
 	}
+
+	private static final Path DATA_FILE_PATH = Path.of("data", "verity.txt");
 
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
@@ -172,6 +178,16 @@ public class Verity {
 		}
 		String exitStr = getExitString();
 		System.out.println(exitStr);
+	}
+
+	/**
+	 * Writes the supplied contents to the data file.
+	 *
+	 * @param fileContents Contents to write to the data file.
+	 * @throws IOException If the data file cannot be written.
+	 */
+	private static void writeToFile(String fileContents) throws IOException {
+		Files.writeString(DATA_FILE_PATH, fileContents, StandardCharsets.UTF_8);
 	}
 
 	private static int getTaskNumber(String[] commandParts, int taskSize) throws VerityException {
