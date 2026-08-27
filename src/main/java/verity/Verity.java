@@ -1,9 +1,18 @@
+package verity;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import verity.command.Command;
+import verity.exception.VerityException;
+import verity.parser.Parser;
+import verity.storage.Storage;
+import verity.task.TaskList;
+import verity.ui.Ui;
+
 /**
- * Coordinates the chatbot's UI, storage, parser, and task list.
+ * Coordinates the chatbot's UI, storage, verity.parser, and task list.
  */
 public class Verity {
     private final Ui ui;
@@ -77,9 +86,9 @@ public class Verity {
     }
 
     /**
-     * Starts Verity using the default data file.
+     * Starts verity.ui.Verity using the default data file.
      *
-     * @param args Command-line arguments, which are not used.
+     * @param args verity.command.Command-line arguments, which are not used.
      */
     public static void main(String[] args) {
         new Verity(Path.of("data", "verity.txt")).run();

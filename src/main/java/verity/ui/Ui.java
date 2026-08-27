@@ -1,6 +1,11 @@
+package verity.ui;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
+
+import verity.task.Task;
+import verity.task.TaskList;
 
 /**
  * Handles all interactions with the user.
@@ -19,9 +24,9 @@ public class Ui {
     }
 
     /**
-     * Reads the next command entered by the user.
+     * Reads the next verity.command entered by the user.
      *
-     * @return User command.
+     * @return User verity.command.
      */
     public String readCommand() {
         return scanner.nextLine();
@@ -117,7 +122,7 @@ public class Ui {
     /**
      * Displays all tasks.
      *
-     * @param taskList Task list to display.
+     * @param taskList verity.task.Task list to display.
      */
     public void showTaskList(TaskList taskList) {
         System.out.println(HORIZONTAL_LINE);
@@ -155,7 +160,7 @@ public class Ui {
     }
 
     /**
-     * Displays an invalid-command or input error.
+     * Displays an invalid-verity.command or input error.
      *
      * @param message Error message.
      */

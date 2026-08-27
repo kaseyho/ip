@@ -1,3 +1,5 @@
+package verity.task;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ public class TaskList {
     /**
      * Adds a task.
      *
-     * @param task Task to add.
+     * @param task verity.task.Task to add.
      */
     public void add(Task task) {
         tasks.add(task);
@@ -47,7 +49,7 @@ public class TaskList {
      * Returns a task.
      *
      * @param taskIndex Zero-based index of the task.
-     * @return Task at the specified index.
+     * @return verity.task.Task at the specified index.
      */
     public Task get(int taskIndex) {
         return tasks.get(taskIndex);

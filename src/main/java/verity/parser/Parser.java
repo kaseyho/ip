@@ -1,8 +1,24 @@
+package verity.parser;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import verity.command.AddCommand;
+import verity.command.Command;
+import verity.command.DeleteCommand;
+import verity.command.ExitCommand;
+import verity.command.FindCommand;
+import verity.command.ListCommand;
+import verity.command.MarkCommand;
+import verity.command.UnmarkCommand;
+import verity.exception.VerityException;
+import verity.task.Deadline;
+import verity.task.Event;
+import verity.task.Task;
+import verity.task.Todo;
 
 /**
  * Interprets user commands and reconstructs tasks from saved data.
@@ -10,12 +26,12 @@ import java.util.Locale;
 public class Parser {
 
     /**
-     * Parses a user command and creates the command to execute.
+     * Parses a user verity.command and creates the verity.command to execute.
      *
-     * @param fullCommand Complete command entered by the user.
+     * @param fullCommand Complete verity.command entered by the user.
      * @param taskCount Number of tasks currently stored.
-     * @return Command corresponding to the user input.
-     * @throws VerityException If the command or its arguments are invalid.
+     * @return verity.command.Command corresponding to the user input.
+     * @throws VerityException If the verity.command or its arguments are invalid.
      */
     public Command parse(String fullCommand, int taskCount)
             throws VerityException {
@@ -48,7 +64,7 @@ public class Parser {
     /**
      * Parses and validates a one-based task number.
      *
-     * @param commandParts Parts of the user command.
+     * @param commandParts Parts of the user verity.command.
      * @param taskCount Number of tasks currently stored.
      * @return Corresponding zero-based task index.
      * @throws VerityException If the task number is missing or invalid.
@@ -73,9 +89,9 @@ public class Parser {
     }
 
     /**
-     * Parses a todo command.
+     * Parses a todo verity.command.
      *
-     * @param commandParts Parts of the user command.
+     * @param commandParts Parts of the user verity.command.
      * @return Parsed todo.
      * @throws VerityException If the description is missing.
      */
@@ -91,9 +107,9 @@ public class Parser {
     }
 
     /**
-     * Parses a deadline command.
+     * Parses a deadline verity.command.
      *
-     * @param commandParts Parts of the user command.
+     * @param commandParts Parts of the user verity.command.
      * @return Parsed deadline.
      * @throws VerityException If its description or date is invalid.
      */
@@ -128,9 +144,9 @@ public class Parser {
     }
 
     /**
-     * Parses an event command.
+     * Parses an event verity.command.
      *
-     * @param commandParts Parts of the user command.
+     * @param commandParts Parts of the user verity.command.
      * @return Parsed event.
      * @throws VerityException If its description or dates are invalid.
      */
@@ -185,11 +201,11 @@ public class Parser {
     }
 
     /**
-     * Parses the date supplied to a find command.
+     * Parses the date supplied to a find verity.command.
      *
-     * @param commandParts Parts of the user command.
+     * @param commandParts Parts of the user verity.command.
      * @return Date to search for.
-     * @throws VerityException If the command does not contain one date.
+     * @throws VerityException If the verity.command does not contain one date.
      */
     private LocalDate parseFindDate(String[] commandParts)
             throws VerityException {

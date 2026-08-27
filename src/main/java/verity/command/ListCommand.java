@@ -1,10 +1,16 @@
+package verity.command;
+
+import verity.storage.Storage;
+import verity.task.TaskList;
+import verity.ui.Ui;
+
 /**
- * Represents a command that displays all tasks.
+ * Represents a verity.command that displays all tasks.
  */
 public class ListCommand extends Command {
 
     /**
-     * Creates a list command.
+     * Creates a list verity.command.
      */
     public ListCommand() {
         super(false);
@@ -13,9 +19,9 @@ public class ListCommand extends Command {
     /**
      * Displays all tasks.
      *
-     * @param tasks Task list to display.
+     * @param tasks verity.task.Task list to display.
      * @param ui UI used to display the task list.
-     * @param storage Storage, which is not used.
+     * @param storage verity.storage.Storage, which is not used.
      */
     @Override
     public void execute(
