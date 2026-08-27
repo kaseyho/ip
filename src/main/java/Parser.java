@@ -200,9 +200,9 @@ public class Parser {
      * @return Reconstructed tasks.
      * @throws VerityException If a saved line is corrupted.
      */
-    public ArrayList<Task> parseSavedTasks(
+    public List<Task> parseSavedTasks(
             List<String> savedTaskLines) throws VerityException {
-        ArrayList<Task> tasks = new ArrayList<>();
+        List<Task> tasks = new ArrayList<>();
 
         for (int i = 0; i < savedTaskLines.size(); i++) {
             try {

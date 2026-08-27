@@ -36,12 +36,12 @@ public class Storage {
     /**
      * Saves all tasks to the data file.
      *
-     * @param tasks Tasks to save.
+     * @param taskList Tasks to save.
      * @throws IOException If the tasks cannot be saved.
      */
-    public void saveTasks(List<Task> tasks) throws IOException {
+    public void saveTasks(TaskList taskList) throws IOException {
         StringBuilder fileContents = new StringBuilder();
-        for (Task task: tasks) {
+        for (Task task: taskList.getTasks()) {
             fileContents.append(task.serialize())
                     .append(System.lineSeparator());
         }

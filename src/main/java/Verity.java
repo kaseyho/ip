@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -16,10 +15,10 @@ public class Verity {
         String greeting = getGreeting();
         System.out.println(greeting);
 
-        ArrayList<Task> tasks;
+        TaskList tasks;
         try {
             List<String> savedTaskLines = storage.loadTaskLines();
-            tasks = parser.parseSavedTasks(savedTaskLines);
+            tasks = new TaskList(parser.parseSavedTasks(savedTaskLines));
         } catch (IOException exception) {
             System.out.println(horizLine
                     + "     I could not load your saved tasks.\n"
@@ -42,29 +41,29 @@ public class Verity {
                     break;
                 } else if (commandType == Parser.Command.MARK) {
                     int taskNumber = parser.parseTaskNumber(commandParts, tasks.size());
-                    tasks.get(taskNumber).markAsDone();
+                    Task markedTask = tasks.mark(taskNumber);
                     storage.saveTasks(tasks);
+
                     System.out.println(horizLine);
                     System.out.println("Nice! I've marked this task as done:\n");
-                    System.out.println(tasks.get(taskNumber).getStatus() + "\n" + horizLine);
+                    System.out.println(markedTask.getStatus() + "\n" + horizLine);
                 } else if (commandType == Parser.Command.UNMARK) {
                     int taskNumber = parser.parseTaskNumber(commandParts, tasks.size());
-                    tasks.get(taskNumber).markAsUndone();
-                    storage.saveTasks(tasks);
-                    System.out.println(horizLine);
+                    Task unmarkedTask = tasks.unmark(taskNumber);
+                    storage.saveTasks(tasks);                    System.out.println(horizLine);
                     System.out.println("Ok, I've marked this task as not done yet:\n");
-                    System.out.println(tasks.get(taskNumber).getStatus() + "\n" + horizLine);
+                    System.out.println(unmarkedTask.getStatus() + "\n" + horizLine);
 
                 } else if (commandType == Parser.Command.LIST) {
                     System.out.println(horizLine);
                     System.out.println("    Here are the tasks in your list:\n");
-                    for (int i = 0; i < tasks.size(); ++i) {
+                    for (int i = 0; i < tasks.size(); i++) {
                         System.out.println("    " + (i + 1) + "." + tasks.get(i).getStatus());
                     }
                     System.out.println(horizLine);
                 } else if (commandType == Parser.Command.DELETE) {
                     int taskNumber = parser.parseTaskNumber(commandParts, tasks.size());
-                    Task removedTask = tasks.remove(taskNumber);
+                    Task removedTask = tasks.delete(taskNumber);
                     storage.saveTasks(tasks);
                     System.out.println(horizLine);
                     System.out.println("Noted. I've removed this task:\n");
@@ -88,7 +87,8 @@ public class Verity {
                     printAddedMessage(eventTask, tasks.size());
                 } else if (commandType == Parser.Command.FIND) {
                     LocalDate date = parser.parseFindDate(commandParts);
-                    printTasksOn(date, tasks);
+                    List<Task> matchingTasks = tasks.findOn(date);
+                    printTasksOn(date, matchingTasks);
                 } else {
                     throw new VerityException("Start with todo, deadline or event.");
                 }
@@ -116,19 +116,15 @@ public class Verity {
                 + horizLine);
     }
 
-    private static void printTasksOn(LocalDate date, List<Task> tasks) {
+    private static void printTasksOn(LocalDate date, List<Task> matchingTasks) {
         System.out.println(horizLine);
         System.out.println("    Tasks on " + date + ":\n");
 
-        boolean hasMatchingTask = false;
-        for (Task task : tasks) {
-            if (task.occursOn(date)) {
-                System.out.println("    " + task.getStatus());
-                hasMatchingTask = true;
-            }
+        for (Task task : matchingTasks) {
+            System.out.println("    " + task.getStatus());
         }
 
-        if (!hasMatchingTask) {
+        if (matchingTasks.isEmpty()) {
             System.out.println("    There are no tasks on this date.");
         }
         System.out.println(horizLine);
