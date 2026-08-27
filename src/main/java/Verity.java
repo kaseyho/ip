@@ -3,27 +3,35 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Coordinates the chatbot's UI, storage, parser, and task list.
+ */
 public class Verity {
+    private final Ui ui;
+    private final Storage storage;
+    private final Parser parser;
 
-    public static void main(String[] args) {
-        Ui ui = new Ui();
-        Storage storage =
-                new Storage(Path.of("data", "verity.txt"));
-        Parser parser = new Parser();
+    private TaskList tasks;
 
+    /**
+     * Creates a chatbot that stores its tasks at the specified path.
+     *
+     * @param dataFilePath Path of the task data file.
+     */
+    public Verity(Path dataFilePath) {
+        this.ui = new Ui();
+        this.storage = new Storage(dataFilePath);
+        this.parser = new Parser();
+        this.tasks = new TaskList();
+    }
+
+    /**
+     * Starts the chatbot and processes commands until the user exits.
+     */
+    public void run() {
         ui.showGreeting();
 
-        TaskList tasks;
-        try {
-            List<String> savedTaskLines =
-                    storage.loadTaskLines();
-            tasks = new TaskList(
-                    parser.parseSavedTasks(savedTaskLines));
-        } catch (IOException exception) {
-            ui.showLoadingError();
-            return;
-        } catch (VerityException exception) {
-            ui.showCorruptedDataError(exception.getMessage());
+        if (!loadTasks()) {
             return;
         }
 
@@ -101,5 +109,35 @@ public class Verity {
         }
 
         ui.showExit();
+    }
+
+    /**
+     * Loads saved tasks into the task list.
+     *
+     * @return True if loading succeeded.
+     */
+    private boolean loadTasks() {
+        try {
+            List<String> savedTaskLines =
+                    storage.loadTaskLines();
+            tasks = new TaskList(
+                    parser.parseSavedTasks(savedTaskLines));
+            return true;
+        } catch (IOException exception) {
+            ui.showLoadingError();
+            return false;
+        } catch (VerityException exception) {
+            ui.showCorruptedDataError(exception.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Starts Verity using the default data file.
+     *
+     * @param args Command-line arguments, which are not used.
+     */
+    public static void main(String[] args) {
+        new Verity(Path.of("data", "verity.txt")).run();
     }
 }
