@@ -2,152 +2,104 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Scanner;
 
 public class Verity {
-    public static final String horizLine = "____________________________________________________________\n";
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        Storage storage = new Storage(Path.of("data", "verity.txt"));
+        Ui ui = new Ui();
+        Storage storage =
+                new Storage(Path.of("data", "verity.txt"));
         Parser parser = new Parser();
 
-        String greeting = getGreeting();
-        System.out.println(greeting);
+        ui.showGreeting();
 
         TaskList tasks;
         try {
-            List<String> savedTaskLines = storage.loadTaskLines();
-            tasks = new TaskList(parser.parseSavedTasks(savedTaskLines));
+            List<String> savedTaskLines =
+                    storage.loadTaskLines();
+            tasks = new TaskList(
+                    parser.parseSavedTasks(savedTaskLines));
         } catch (IOException exception) {
-            System.out.println(horizLine
-                    + "     I could not load your saved tasks.\n"
-                    + "     Please check the data file and try again.\n"
-                    + horizLine);
+            ui.showLoadingError();
             return;
         } catch (VerityException exception) {
-            System.out.println(horizLine
-                    + "     The saved task data is corrupted.\n"
-                    + "     " + exception.getMessage() + "\n"
-                    + horizLine);
+            ui.showCorruptedDataError(exception.getMessage());
             return;
         }
+
         while (true) {
-            String command = scanner.nextLine();
-            String[] commandParts = command.trim().split("\\s+");
+            String command = ui.readCommand();
+            String[] commandParts =
+                    command.trim().split("\\s+");
+
             try {
-                Parser.Command commandType = parser.parseCommand(commandParts[0]);
+                Parser.Command commandType =
+                        parser.parseCommand(commandParts[0]);
+
                 if (commandType == Parser.Command.BYE) {
                     break;
                 } else if (commandType == Parser.Command.MARK) {
-                    int taskNumber = parser.parseTaskNumber(commandParts, tasks.size());
+                    int taskNumber = parser.parseTaskNumber(
+                            commandParts, tasks.size());
                     Task markedTask = tasks.mark(taskNumber);
                     storage.saveTasks(tasks);
-
-                    System.out.println(horizLine);
-                    System.out.println("Nice! I've marked this task as done:\n");
-                    System.out.println(markedTask.getStatus() + "\n" + horizLine);
-                } else if (commandType == Parser.Command.UNMARK) {
-                    int taskNumber = parser.parseTaskNumber(commandParts, tasks.size());
+                    ui.showTaskMarked(markedTask);
+                } else if (commandType
+                        == Parser.Command.UNMARK) {
+                    int taskNumber = parser.parseTaskNumber(
+                            commandParts, tasks.size());
                     Task unmarkedTask = tasks.unmark(taskNumber);
-                    storage.saveTasks(tasks);                    System.out.println(horizLine);
-                    System.out.println("Ok, I've marked this task as not done yet:\n");
-                    System.out.println(unmarkedTask.getStatus() + "\n" + horizLine);
-
+                    storage.saveTasks(tasks);
+                    ui.showTaskUnmarked(unmarkedTask);
                 } else if (commandType == Parser.Command.LIST) {
-                    System.out.println(horizLine);
-                    System.out.println("    Here are the tasks in your list:\n");
-                    for (int i = 0; i < tasks.size(); i++) {
-                        System.out.println("    " + (i + 1) + "." + tasks.get(i).getStatus());
-                    }
-                    System.out.println(horizLine);
-                } else if (commandType == Parser.Command.DELETE) {
-                    int taskNumber = parser.parseTaskNumber(commandParts, tasks.size());
+                    ui.showTaskList(tasks);
+                } else if (commandType
+                        == Parser.Command.DELETE) {
+                    int taskNumber = parser.parseTaskNumber(
+                            commandParts, tasks.size());
                     Task removedTask = tasks.delete(taskNumber);
                     storage.saveTasks(tasks);
-                    System.out.println(horizLine);
-                    System.out.println("Noted. I've removed this task:\n");
-                    System.out.println(removedTask.getStatus() + "\n" + horizLine);
-                    System.out.println("Now you have " + tasks.size() + " tasks in the list.\n");
-                    System.out.println(horizLine);
+                    ui.showTaskDeleted(
+                            removedTask, tasks.size());
                 } else if (commandType == Parser.Command.TODO) {
-                    Todo todoTask = parser.parseTodo(commandParts);
+                    Todo todoTask =
+                            parser.parseTodo(commandParts);
                     tasks.add(todoTask);
                     storage.saveTasks(tasks);
-                    printAddedMessage(todoTask, tasks.size());
-                } else if (commandType == Parser.Command.DEADLINE) {
-                    Deadline deadlineTask = parser.parseDeadline(commandParts);
+                    ui.showTaskAdded(todoTask, tasks.size());
+                } else if (commandType
+                        == Parser.Command.DEADLINE) {
+                    Deadline deadlineTask =
+                            parser.parseDeadline(commandParts);
                     tasks.add(deadlineTask);
                     storage.saveTasks(tasks);
-                    printAddedMessage(deadlineTask, tasks.size());
-                } else if (commandType == Parser.Command.EVENT) {
-                    Event eventTask = parser.parseEvent(commandParts);
+                    ui.showTaskAdded(
+                            deadlineTask, tasks.size());
+                } else if (commandType
+                        == Parser.Command.EVENT) {
+                    Event eventTask =
+                            parser.parseEvent(commandParts);
                     tasks.add(eventTask);
                     storage.saveTasks(tasks);
-                    printAddedMessage(eventTask, tasks.size());
+                    ui.showTaskAdded(eventTask, tasks.size());
                 } else if (commandType == Parser.Command.FIND) {
-                    LocalDate date = parser.parseFindDate(commandParts);
-                    List<Task> matchingTasks = tasks.findOn(date);
-                    printTasksOn(date, matchingTasks);
+                    LocalDate date =
+                            parser.parseFindDate(commandParts);
+                    List<Task> matchingTasks =
+                            tasks.findOn(date);
+                    ui.showTasksOn(date, matchingTasks);
                 } else {
-                    throw new VerityException("Start with todo, deadline or event.");
+                    throw new VerityException(
+                            "Start with todo, deadline or event.");
                 }
-            } catch (VerityException e) {
-                System.out.println(horizLine
-                        + "     Speak your truth. " + e.getMessage() + "\n"
-                        + horizLine);
-            } catch (IOException e) {
-                System.out.println(horizLine
-                        + "     I could not save your tasks.\n"
-                        + "     Please check the data folder and try again.\n"
-                        + horizLine);
+            } catch (VerityException exception) {
+                ui.showCommandError(exception.getMessage());
+            } catch (IOException exception) {
+                ui.showSavingError();
                 return;
             }
         }
-        String exitStr = getExitString();
-        System.out.println(exitStr);
-    }
 
-    private static void printAddedMessage(Task task, int taskCount) {
-        System.out.println(horizLine
-                + "     Got it. I've added this task:\n"
-                + "       " + task.getStatus() + "\n"
-                + "     Now you have " + taskCount + " tasks in the list.\n"
-                + horizLine);
-    }
-
-    private static void printTasksOn(LocalDate date, List<Task> matchingTasks) {
-        System.out.println(horizLine);
-        System.out.println("    Tasks on " + date + ":\n");
-
-        for (Task task : matchingTasks) {
-            System.out.println("    " + task.getStatus());
-        }
-
-        if (matchingTasks.isEmpty()) {
-            System.out.println("    There are no tasks on this date.");
-        }
-        System.out.println(horizLine);
-    }
-
-    private static String getGreeting() {
-        // This ASCII art for VERITY was generated by Codex Luna High.
-        String banner = "V   V  EEEEE  RRRR   IIIII  TTTTT  Y   Y\n"
-                + "V   V  E      R   R    I      T     Y Y\n"
-                + " V V   EEEE   RRRR     I      T      Y\n"
-                + "  V    E      R R      I      T      Y\n"
-                + "  V    EEEEE  R  RR  IIIII    T      Y";
-        return horizLine
-                + banner + "\n\n"
-                + "Hello! I'm Verity.\n"
-                + "I speak only the truth.\n"
-                + "What can I do for you?\n"
-                + horizLine;
-    }
-
-    private static String getExitString() {
-        return "____________________________________________________________\n"
-                + "    Bye. Hope to see you again soon!\n"
-                + "____________________________________________________________\n";
+        ui.showExit();
     }
 }
