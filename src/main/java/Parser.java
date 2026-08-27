@@ -11,7 +11,7 @@ public class Parser {
     /**
      * Supported chatbot commands.
      */
-    public enum Command {
+    public enum CommandType {
         TODO,
         DEADLINE,
         EVENT,
@@ -24,15 +24,15 @@ public class Parser {
     }
 
     /**
-     * Parses a command word.
+     * Parses the type of a user command.
      *
      * @param word First word of the user command.
-     * @return Corresponding command.
-     * @throws VerityException If the command is unknown.
+     * @return Corresponding command type.
+     * @throws VerityException If the command type is unknown.
      */
-    public Command parseCommand(String word) throws VerityException {
+    public CommandType parseCommandType(String word) throws VerityException {
         try {
-            return Command.valueOf(word.toUpperCase());
+            return CommandType.valueOf(word.toUpperCase());
         } catch (IllegalArgumentException exception) {
             throw new VerityException("I don't know that command.");
         }

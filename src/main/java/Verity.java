@@ -35,48 +35,51 @@ public class Verity {
             return;
         }
 
-        while (true) {
+        boolean isExit = false;
+        while (!isExit) {
             String command = ui.readCommand();
             String[] commandParts =
                     command.trim().split("\\s+");
 
             try {
-                Parser.Command commandType =
-                        parser.parseCommand(commandParts[0]);
+                Parser.CommandType commandType =
+                        parser.parseCommandType(commandParts[0]);
 
-                if (commandType == Parser.Command.BYE) {
-                    break;
-                } else if (commandType == Parser.Command.MARK) {
+                if (commandType == Parser.CommandType.BYE) {
+                    Command exitCommand = new ExitCommand();
+                    exitCommand.execute(tasks, ui, storage);
+                    isExit = exitCommand.isExit();
+                } else if (commandType == Parser.CommandType.MARK) {
                     int taskNumber = parser.parseTaskNumber(
                             commandParts, tasks.size());
                     Task markedTask = tasks.mark(taskNumber);
                     storage.saveTasks(tasks);
                     ui.showTaskMarked(markedTask);
                 } else if (commandType
-                        == Parser.Command.UNMARK) {
+                        == Parser.CommandType.UNMARK) {
                     int taskNumber = parser.parseTaskNumber(
                             commandParts, tasks.size());
                     Task unmarkedTask = tasks.unmark(taskNumber);
                     storage.saveTasks(tasks);
                     ui.showTaskUnmarked(unmarkedTask);
-                } else if (commandType == Parser.Command.LIST) {
+                } else if (commandType == Parser.CommandType.LIST) {
                     ui.showTaskList(tasks);
                 } else if (commandType
-                        == Parser.Command.DELETE) {
+                        == Parser.CommandType.DELETE) {
                     int taskNumber = parser.parseTaskNumber(
                             commandParts, tasks.size());
                     Task removedTask = tasks.delete(taskNumber);
                     storage.saveTasks(tasks);
                     ui.showTaskDeleted(
                             removedTask, tasks.size());
-                } else if (commandType == Parser.Command.TODO) {
+                } else if (commandType == Parser.CommandType.TODO) {
                     Todo todoTask =
                             parser.parseTodo(commandParts);
                     tasks.add(todoTask);
                     storage.saveTasks(tasks);
                     ui.showTaskAdded(todoTask, tasks.size());
                 } else if (commandType
-                        == Parser.Command.DEADLINE) {
+                        == Parser.CommandType.DEADLINE) {
                     Deadline deadlineTask =
                             parser.parseDeadline(commandParts);
                     tasks.add(deadlineTask);
@@ -84,13 +87,13 @@ public class Verity {
                     ui.showTaskAdded(
                             deadlineTask, tasks.size());
                 } else if (commandType
-                        == Parser.Command.EVENT) {
+                        == Parser.CommandType.EVENT) {
                     Event eventTask =
                             parser.parseEvent(commandParts);
                     tasks.add(eventTask);
                     storage.saveTasks(tasks);
                     ui.showTaskAdded(eventTask, tasks.size());
-                } else if (commandType == Parser.Command.FIND) {
+                } else if (commandType == Parser.CommandType.FIND) {
                     LocalDate date =
                             parser.parseFindDate(commandParts);
                     List<Task> matchingTasks =
