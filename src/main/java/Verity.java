@@ -157,12 +157,12 @@ public class Verity {
                         throw new VerityException("The description of an event cannot be empty.");
                     }
                     if (i == n) {
-                        throw new VerityException("An event must include a /from time and a /to time.");
+                        throw new VerityException("An event must include a /from date and a /to date.");
                     }
                     String desc = description.toString();
                     i++;
                     if (i == n || commandParts[i].equals("/to")) {
-                        throw new VerityException("The event's from time cannot be empty.");
+                        throw new VerityException("The event's from date cannot be empty.");
                     }
                     StringBuilder from = new StringBuilder();
                     int j = i;
@@ -174,12 +174,12 @@ public class Verity {
                         j++;
                     }
                     if (j == n) {
-                        throw new VerityException("An event must include a /to time.");
+                        throw new VerityException("An event must include a /to date.");
                     }
-                    String fromDate = from.toString();
+                    LocalDate fromDate = parseDate(from.toString());
                     j++;
                     if (j == n) {
-                        throw new VerityException("The event's to time cannot be empty.");
+                        throw new VerityException("The event's to date cannot be empty.");
                     }
                     StringBuilder to = new StringBuilder();
                     for (int k = j; k < n; k++) {
@@ -188,8 +188,8 @@ public class Verity {
                         }
                         to.append(commandParts[k]);
                     }
-                    String toDate = to.toString();
-                    Event eventTask = new Event(desc, fromDate, toDate);
+                    LocalDate toDate = parseDate(to.toString());
+                    Event eventTask = createEvent(desc, fromDate, toDate);
                     tasks.add(eventTask);
                     saveTasks(tasks);
                     printAddedMessage(eventTask, tasks.size());
@@ -337,6 +337,22 @@ public class Verity {
     }
 
     /**
+     * Creates an event after validating its date range.
+     *
+     * @param description Event description.
+     * @param fromDate Event start date.
+     * @param toDate Event end date.
+     * @return Validated event.
+     * @throws VerityException If the end date is before the start date.
+     */
+    private static Event createEvent(String description, LocalDate fromDate, LocalDate toDate) throws VerityException {
+        if (toDate.isBefore(fromDate)) {
+            throw new VerityException("The event end date cannot be before the start date.");
+        }
+        return new Event(description, fromDate, toDate);
+    }
+
+    /**
      * Returns tasks reconstructed from saved task lines.
      *
      * @param savedTaskLines Lines read from the data file.
@@ -398,7 +414,9 @@ public class Verity {
                     throw new VerityException(
                             "an event must have exactly five fields.");
                 }
-                task = new Event(fields[2], fields[3], fields[4]);
+                LocalDate fromDate = parseDate(fields[3]);
+                LocalDate toDate = parseDate(fields[4]);
+                task = createEvent(fields[2], fromDate, toDate);
             }
             default -> throw new VerityException(
                     "unknown task type '" + taskType + "'.");

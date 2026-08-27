@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 public class Todo extends Task {
     public Todo(String description) {
         super(description);
@@ -11,5 +13,10 @@ public class Todo extends Task {
     @Override
     public String serialize() {
         return String.join("\t", "T", getStorageStatus(), description);
+    }
+
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return false;
     }
 }

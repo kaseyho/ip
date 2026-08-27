@@ -28,4 +28,9 @@ public class Deadline extends Task {
         return String.join("\t", "D", getStorageStatus(), description,
                 by.toString());
     }
+
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return by.equals(date);
+    }
 }

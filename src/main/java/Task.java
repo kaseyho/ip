@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 /**
  * Represents a task that can be tracked and stored.
  */
@@ -20,6 +22,14 @@ public abstract class Task {
      * @return Serialized task data.
      */
     public abstract String serialize();
+
+    /**
+     * Returns whether this task occurs on the specified date.
+     *
+     * @param date Date to check.
+     * @return True if this task occurs on the date.
+     */
+    public abstract boolean occursOn(LocalDate date);
 
     protected String getStorageStatus() {
         return isDone ? "1" : "0";
