@@ -127,6 +127,27 @@ class UiTest {
     }
 
     @Test
+    void showMatchingTasks_matchingTasks_printsNumberedTasks() {
+        String output = captureOutput(
+                () -> new Ui().showMatchingTasks(List.of(
+                        new Todo("read book"),
+                        new Todo("return book"))));
+
+        assertTrue(output.contains(
+                "Here are the matching tasks in your list:"));
+        assertTrue(output.contains("1.[T][ ] read book"));
+        assertTrue(output.contains("2.[T][ ] return book"));
+    }
+
+    @Test
+    void showMatchingTasks_noMatchingTasks_printsEmptyMessage() {
+        String output = captureOutput(
+                () -> new Ui().showMatchingTasks(List.of()));
+
+        assertTrue(output.contains("There are no matching tasks."));
+    }
+
+    @Test
     void showErrorMethods_printExpectedErrorMessages() {
         String output = captureOutput(() -> {
             Ui ui = new Ui();

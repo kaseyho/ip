@@ -11,6 +11,7 @@ import verity.command.Command;
 import verity.command.DeleteCommand;
 import verity.command.ExitCommand;
 import verity.command.FindCommand;
+import verity.command.FindDateCommand;
 import verity.command.ListCommand;
 import verity.command.MarkCommand;
 import verity.command.UnmarkCommand;
@@ -55,6 +56,8 @@ public class Parser {
             case "event" -> new AddCommand(
                     parseEvent(commandParts));
             case "find" -> new FindCommand(
+                    parseFindKeyword(commandParts));
+            case "finddate" -> new FindDateCommand(
                     parseFindDate(commandParts));
             default -> throw new VerityException(
                     "I don't know that command.");
@@ -146,7 +149,7 @@ public class Parser {
     /**
      * Parses an event command.
      *
-     * @param commandParts Parts of the user command.
+     * @param commandParts Parts of the user verity.command.
      * @return Parsed event.
      * @throws VerityException If its description or dates are invalid.
      */
@@ -201,7 +204,23 @@ public class Parser {
     }
 
     /**
-     * Parses the date supplied to a find command.
+     * Parses the keyword supplied to a find command.
+     *
+     * @param commandParts Parts of the user's command.
+     * @return Keyword to search for.
+     * @throws VerityException If the keyword is missing.
+     */
+    private String parseFindKeyword(String[] commandParts)
+            throws VerityException {
+        if (commandParts.length < 2) {
+            throw new VerityException(
+                    "Please provide a keyword to search for.");
+        }
+        return joinWords(commandParts, 1, commandParts.length);
+    }
+
+    /**
+     * Parses the date supplied to a finddate command.
      *
      * @param commandParts Parts of the user command.
      * @return Date to search for.
@@ -211,7 +230,7 @@ public class Parser {
             throws VerityException {
         if (commandParts.length != 2) {
             throw new VerityException(
-                    "Use find followed by a date in yyyy-MM-dd format.");
+                    "Use finddate followed by a date in yyyy-MM-dd format.");
         }
 
         return parseDate(commandParts[1]);

@@ -97,6 +97,27 @@ class TaskListTest {
     }
 
     @Test
+    void findByKeyword_mixedCaseKeyword_returnsMatchesInOriginalOrder() {
+        Todo firstMatch = new Todo("read book");
+        Deadline nonMatch = new Deadline("submit report", MATCHING_DATE);
+        Todo secondMatch = new Todo("return BOOK");
+        TaskList taskList = new TaskList(
+                List.of(firstMatch, nonMatch, secondMatch));
+
+        List<Task> matchingTasks = taskList.findByKeyword("BoOk");
+
+        assertEquals(List.of(firstMatch, secondMatch), matchingTasks);
+    }
+
+    @Test
+    void findByKeyword_keywordWithNoMatches_returnsEmptyList() {
+        TaskList taskList = new TaskList(
+                List.of(new Todo("read book")));
+
+        assertTrue(taskList.findByKeyword("report").isEmpty());
+    }
+
+    @Test
     void constructor_initialListIsCopied() {
         List<Task> initialTasks = new ArrayList<>();
         Todo todo = new Todo("read book");

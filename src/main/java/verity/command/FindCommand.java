@@ -1,6 +1,5 @@
 package verity.command;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import verity.storage.Storage;
@@ -9,32 +8,32 @@ import verity.task.TaskList;
 import verity.ui.Ui;
 
 /**
- * Represents a command that finds tasks occurring on a date.
+ * Represents a command that finds tasks by a description keyword.
  */
 public class FindCommand extends Command {
-    private final LocalDate date;
+    private final String keyword;
 
     /**
-     * Creates a find command.
+     * Creates a keyword-search command.
      *
-     * @param date Date to search for.
+     * @param keyword Keyword to search for.
      */
-    public FindCommand(LocalDate date) {
+    public FindCommand(String keyword) {
         super(false);
-        this.date = date;
+        this.keyword = keyword;
     }
 
     /**
-     * Finds and displays tasks occurring on the date.
+     * Finds and displays tasks whose descriptions contain the keyword.
      *
-     * @param tasks Task list to search.
+     * @param tasks verity.task.Task list to search.
      * @param ui UI used to display matching tasks.
-     * @param storage Storage, which is not used.
+     * @param storage verity.storage.Storage, which is not used.
      */
     @Override
     public void execute(
             TaskList tasks, Ui ui, Storage storage) {
-        List<Task> matchingTasks = tasks.findOn(date);
-        ui.showTasksOn(date, matchingTasks);
+        List<Task> matchingTasks = tasks.findByKeyword(keyword);
+        ui.showMatchingTasks(matchingTasks);
     }
 }

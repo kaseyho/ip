@@ -58,6 +58,28 @@ class VerityTest {
     }
 
     @Test
+    void run_findCommands_displayKeywordAndDateMatches() throws IOException {
+        Path dataFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(
+                dataFile,
+                "T\t0\tread book" + System.lineSeparator()
+                        + "D\t1\treturn BOOK\t2026-08-10"
+                        + System.lineSeparator()
+                        + "D\t0\tsubmit report\t2026-08-11"
+                        + System.lineSeparator(),
+                StandardCharsets.UTF_8);
+
+        String output = runWithInput(
+                dataFile,
+                "find book\nfinddate 2026-08-11\nbye\n");
+
+        assertTrue(output.contains("1.[T][ ] read book"));
+        assertTrue(output.contains("2.[D][X] return BOOK"));
+        assertTrue(output.contains("Tasks on 2026-08-11:"));
+        assertTrue(output.contains("[D][ ] submit report"));
+    }
+
+    @Test
     void run_corruptedData_showsCorruptionErrorAndStops() throws IOException {
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
         Files.writeString(
