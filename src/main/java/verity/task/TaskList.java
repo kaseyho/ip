@@ -29,7 +29,7 @@ public class TaskList {
     /**
      * Adds a task.
      *
-     * @param task verity.task.Task to add.
+     * @param task Task to add.
      */
     public void add(Task task) {
         tasks.add(task);
@@ -45,6 +45,12 @@ public class TaskList {
         return tasks.remove(taskIndex);
     }
 
+    /**
+     * Returns a task.
+     *
+     * @param taskIndex Zero-based index of the task.
+     * @return Task at the specified index.
+     */
     public Task get(int taskIndex) {
         return tasks.get(taskIndex);
     }
@@ -87,6 +93,7 @@ public class TaskList {
                 matchingTasks.add(task);
             }
         }
+
         return matchingTasks;
     }
 

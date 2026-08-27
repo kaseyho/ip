@@ -35,6 +35,7 @@ public class Storage {
         if (Files.notExists(dataFilePath)) {
             return new ArrayList<>();
         }
+
         return Files.readAllLines(dataFilePath, StandardCharsets.UTF_8);
     }
 
@@ -46,10 +47,11 @@ public class Storage {
      */
     public void saveTasks(TaskList taskList) throws IOException {
         StringBuilder fileContents = new StringBuilder();
-        for (Task task: taskList.getTasks()) {
+        for (Task task : taskList.getTasks()) {
             fileContents.append(task.serialize())
                     .append(System.lineSeparator());
         }
+
         writeToFile(fileContents.toString());
     }
 

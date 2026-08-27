@@ -61,6 +61,7 @@ public class Verity {
 
         ui.showExit();
     }
+
     /**
      * Loads saved tasks into the task list.
      *

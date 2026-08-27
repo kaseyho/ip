@@ -9,14 +9,14 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the observable behaviour of deadline tasks.
+ * Tests the observable behavior of deadline tasks.
  */
 class DeadlineTest {
     private static final LocalDate DEADLINE_DATE =
             LocalDate.of(2026, 8, 10);
 
     @Test
-    void getBy_deadline_returnsStoredDate() {
+    void getBy_deadline_returnsDueDate() {
         Deadline deadline = new Deadline("submit report", DEADLINE_DATE);
 
         assertEquals(DEADLINE_DATE, deadline.getBy());

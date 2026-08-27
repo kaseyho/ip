@@ -30,7 +30,7 @@ public abstract class Task {
     }
 
     /**
-     *  Returns a line representing this task in the data file.
+     * Returns a line representing this task in the data file.
      *
      * @return Serialized task data.
      */

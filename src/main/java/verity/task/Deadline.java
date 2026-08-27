@@ -5,33 +5,33 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /**
- * Represents a task that must be completed by a specific date.
+ * Represents a task that is due on a specific date.
  */
 public class Deadline extends Task {
     private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
             DateTimeFormatter.ofPattern("MMM d yyyy", Locale.ENGLISH);
 
-    private final LocalDate by;
+    private final LocalDate dueDate;
 
     /**
-     * Creates an incomplete deadline task.
+     * Creates an incomplete deadline with the specified description and due date.
      *
-     * @param description Description of the task.
-     * @param by Due date of the task.
+     * @param description Description of the deadline.
+     * @param dueDate Date on which the deadline is due.
      */
-    public Deadline(String description, LocalDate by) {
+    public Deadline(String description, LocalDate dueDate) {
         super(description);
-        this.by = by;
+        this.dueDate = dueDate;
     }
 
     public LocalDate getBy() {
-        return by;
+        return dueDate;
     }
 
     @Override
     public String getStatus() {
         return "[D]" + super.getStatus()
-                + " (by: " + by.format(DISPLAY_DATE_FORMAT) + ")";
+                + " (by: " + dueDate.format(DISPLAY_DATE_FORMAT) + ")";
     }
 
     /**
@@ -42,7 +42,7 @@ public class Deadline extends Task {
     @Override
     public String serialize() {
         return String.join("\t", "D", getStorageStatus(), description,
-                by.toString());
+                dueDate.toString());
     }
 
     /**
@@ -53,6 +53,6 @@ public class Deadline extends Task {
      */
     @Override
     public boolean occursOn(LocalDate date) {
-        return by.equals(date);
+        return dueDate.equals(date);
     }
 }

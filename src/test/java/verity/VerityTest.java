@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Tests the chatbot's top-level startup and command loop behaviour.
+ * Tests the chatbot's top-level startup and command loop behavior.
  */
 class VerityTest {
     @TempDir

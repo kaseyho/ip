@@ -13,7 +13,7 @@ public abstract class Command {
     private final boolean isExit;
 
     /**
-     * Creates a verity.command.
+     * Creates a command.
      *
      * @param isExit Whether this command exits the chatbot.
      */

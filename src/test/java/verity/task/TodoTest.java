@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the observable behaviour of todo tasks.
+ * Tests the observable behavior of todo tasks.
  */
 class TodoTest {
     private static final LocalDate ANY_DATE = LocalDate.of(2026, 8, 10);
