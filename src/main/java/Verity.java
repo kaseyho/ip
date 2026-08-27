@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -63,7 +62,9 @@ public class Verity {
                     storage.saveTasks(tasks);
                     ui.showTaskUnmarked(unmarkedTask);
                 } else if (commandType == Parser.CommandType.LIST) {
-                    ui.showTaskList(tasks);
+                    Command listCommand = new ListCommand();
+                    listCommand.execute(tasks, ui, storage);
+                    isExit = listCommand.isExit();
                 } else if (commandType
                         == Parser.CommandType.DELETE) {
                     int taskNumber = parser.parseTaskNumber(
@@ -94,11 +95,9 @@ public class Verity {
                     storage.saveTasks(tasks);
                     ui.showTaskAdded(eventTask, tasks.size());
                 } else if (commandType == Parser.CommandType.FIND) {
-                    LocalDate date =
-                            parser.parseFindDate(commandParts);
-                    List<Task> matchingTasks =
-                            tasks.findOn(date);
-                    ui.showTasksOn(date, matchingTasks);
+                    Command findCommand = new FindCommand(parser.parseFindDate(commandParts));
+                    findCommand.execute(tasks, ui, storage);
+                    isExit = findCommand.isExit();
                 } else {
                     throw new VerityException(
                             "Start with todo, deadline or event.");
