@@ -19,8 +19,3 @@ _temp/
 /text-ui-test/ACTUAL.TXT
 text-ui-test/EXPECTED-UNIX.TXT
 
-# Codex skills
-.codex
-test
-!src/test/
-!src/test/**
