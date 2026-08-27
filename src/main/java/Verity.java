@@ -1,6 +1,4 @@
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -23,17 +21,16 @@ public class Verity {
         BYE
     }
 
-    private static final Path DATA_FILE_PATH = Path.of("data", "verity.txt");
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        Storage storage = new Storage(Path.of("data", "verity.txt"));
 
         String greeting = getGreeting();
         System.out.println(greeting);
 
         ArrayList<Task> tasks;
         try {
-            List<String> savedTaskLines = readTaskLinesFromFile();
+            List<String> savedTaskLines = storage.loadTaskLines();
             tasks = parseSavedTasks(savedTaskLines);
         } catch (IOException exception) {
             System.out.println(horizLine
@@ -59,14 +56,14 @@ public class Verity {
                 } else if (commandType == Command.MARK) {
                     int taskNumber = getTaskNumber(commandParts, tasks.size());
                     tasks.get(taskNumber).markAsDone();
-                    saveTasks(tasks);
+                    storage.saveTasks(tasks);
                     System.out.println(horizLine);
                     System.out.println("Nice! I've marked this task as done:\n");
                     System.out.println(tasks.get(taskNumber).getStatus() + "\n" + horizLine);
                 } else if (commandType == Command.UNMARK) {
                     int taskNumber = getTaskNumber(commandParts, tasks.size());
                     tasks.get(taskNumber).markAsUndone();
-                    saveTasks(tasks);
+                    storage.saveTasks(tasks);
                     System.out.println(horizLine);
                     System.out.println("Ok, I've marked this task as not done yet:\n");
                     System.out.println(tasks.get(taskNumber).getStatus() + "\n" + horizLine);
@@ -81,7 +78,7 @@ public class Verity {
                 } else if (commandType == Command.DELETE) {
                     int taskNumber = getTaskNumber(commandParts, tasks.size());
                     Task removedTask = tasks.remove(taskNumber);
-                    saveTasks(tasks);
+                    storage.saveTasks(tasks);
                     System.out.println(horizLine);
                     System.out.println("Noted. I've removed this task:\n");
                     System.out.println(removedTask.getStatus() + "\n" + horizLine);
@@ -102,7 +99,7 @@ public class Verity {
                     String desc = description.toString();
                     Todo toDoEvent = new Todo(desc);
                     tasks.add(toDoEvent);
-                    saveTasks(tasks);
+                    storage.saveTasks(tasks);
                     printAddedMessage(toDoEvent, tasks.size());
                 } else if (commandType == Command.DEADLINE) {
                     if (n == 1) {
@@ -138,7 +135,7 @@ public class Verity {
                     String byDate = by.toString();
                     Deadline deadlineTask = new Deadline(desc, parseDate(byDate));
                     tasks.add(deadlineTask);
-                    saveTasks(tasks);
+                    storage.saveTasks(tasks);
                     printAddedMessage(deadlineTask, tasks.size());
                 } else if (commandType == Command.EVENT) {
                     if (n == 1) {
@@ -191,7 +188,7 @@ public class Verity {
                     LocalDate toDate = parseDate(to.toString());
                     Event eventTask = createEvent(desc, fromDate, toDate);
                     tasks.add(eventTask);
-                    saveTasks(tasks);
+                    storage.saveTasks(tasks);
                     printAddedMessage(eventTask, tasks.size());
                 } else if (commandType == Command.FIND) {
                     if (n != 2) {
@@ -215,44 +212,6 @@ public class Verity {
         }
         String exitStr = getExitString();
         System.out.println(exitStr);
-    }
-
-    /**
-     * Writes the supplied contents to the data file.
-     *
-     * @param fileContents Contents to write to the data file.
-     * @throws IOException If the data directory or file cannot be written.
-     */
-    private static void writeToFile(String fileContents) throws IOException {
-        Files.createDirectories(DATA_FILE_PATH.getParent());
-        Files.writeString(DATA_FILE_PATH, fileContents, StandardCharsets.UTF_8);
-    }
-
-    /**
-     * Returns the task lines stored in the data file, or an empty list if the file does not exist.
-     *
-     * @return Task lines stored in the data file.
-     * @throws IOException If the data file exists but cannot be read.
-     */
-    private static List<String> readTaskLinesFromFile() throws IOException {
-        if (Files.notExists(DATA_FILE_PATH)) {
-            return new ArrayList<>();
-        }
-        return Files.readAllLines(DATA_FILE_PATH, StandardCharsets.UTF_8);
-    }
-
-    /**
-     * Writes all tasks to the data file.
-     *
-     * @param tasks Tasks to write to the data file.
-     * @throws IOException If the tasks cannot be written.
-     */
-    private static void saveTasks(List<Task> tasks) throws IOException {
-        StringBuilder fileContents = new StringBuilder();
-        for (Task task : tasks) {
-            fileContents.append(task.serialize()).append(System.lineSeparator());
-        }
-        writeToFile(fileContents.toString());
     }
 
     private static int getTaskNumber(String[] commandParts, int taskSize) throws VerityException {
