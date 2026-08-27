@@ -197,7 +197,7 @@ public class Verity {
                     if (n != 2) {
                         throw new VerityException("Use find followed by a date in yyyy-MM-dd format.");
                     }
-                    printDeadlinesOn(parseDate(commandParts[1]), tasks);
+                    printTasksOn(parseDate(commandParts[1]), tasks);
                 } else {
                     throw new VerityException("Start with todo, deadline or event.");
                 }
@@ -281,20 +281,20 @@ public class Verity {
                 + horizLine);
     }
 
-    private static void printDeadlinesOn(LocalDate date, List<Task> tasks) {
+    private static void printTasksOn(LocalDate date, List<Task> tasks) {
         System.out.println(horizLine);
-        System.out.println("    Deadlines on " + date + ":\n");
+        System.out.println("    Tasks on " + date + ":\n");
 
-        boolean hasMatchingDeadline = false;
+        boolean hasMatchingTask = false;
         for (Task task : tasks) {
-            if (task instanceof Deadline deadline && deadline.getBy().equals(date)) {
-                System.out.println("    " + deadline.getStatus());
-                hasMatchingDeadline = true;
+            if (task.occursOn(date)) {
+                System.out.println("    " + task.getStatus());
+                hasMatchingTask = true;
             }
         }
 
-        if (!hasMatchingDeadline) {
-            System.out.println("    There are no deadlines on this date.");
+        if (!hasMatchingTask) {
+            System.out.println("    There are no tasks on this date.");
         }
         System.out.println(horizLine);
     }
