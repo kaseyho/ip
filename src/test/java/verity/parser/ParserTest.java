@@ -17,6 +17,7 @@ import verity.command.Command;
 import verity.command.DeleteCommand;
 import verity.command.ExitCommand;
 import verity.command.FindCommand;
+import verity.command.FindDateCommand;
 import verity.command.ListCommand;
 import verity.command.MarkCommand;
 import verity.command.UnmarkCommand;
@@ -54,7 +55,10 @@ class ParserTest {
                 parser.parse("list", 0));
         assertInstanceOf(
                 FindCommand.class,
-                parser.parse("find 2026-08-10", 0));
+                parser.parse("find book", 0));
+        assertInstanceOf(
+                FindDateCommand.class,
+                parser.parse("finddate 2026-08-10", 0));
         assertInstanceOf(
                 MarkCommand.class,
                 parser.parse("mark 1", 1));
@@ -179,13 +183,24 @@ class ParserTest {
     }
 
     @Test
-    void parse_invalidFindCommand_throwsVerityException() {
+    void parse_findWithoutKeyword_throwsVerityException() {
         VerityException exception = assertThrows(
                 VerityException.class,
                 () -> parser.parse("find", 0));
 
         assertEquals(
-                "Use find followed by a date in yyyy-MM-dd format.",
+                "Please provide a keyword to search for.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_invalidFindDateCommand_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("finddate book", 0));
+
+        assertEquals(
+                "Dates must use the format yyyy-MM-dd.",
                 exception.getMessage());
     }
 

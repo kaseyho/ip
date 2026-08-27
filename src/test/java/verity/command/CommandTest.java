@@ -38,7 +38,9 @@ class CommandTest {
     void nonExitCommands_isExit_returnsFalse() {
         assertFalse(new AddCommand(new Todo("read book")).isExit());
         assertFalse(new DeleteCommand(0).isExit());
-        assertFalse(new FindCommand(LocalDate.of(2026, 8, 10)).isExit());
+        assertFalse(new FindCommand("book").isExit());
+        assertFalse(new FindDateCommand(
+                LocalDate.of(2026, 8, 10)).isExit());
         assertFalse(new ListCommand().isExit());
         assertFalse(new MarkCommand(0).isExit());
         assertFalse(new UnmarkCommand(0).isExit());
@@ -117,7 +119,24 @@ class CommandTest {
     }
 
     @Test
-    void findCommand_execute_displaysTasksOnDate() {
+    void findCommand_execute_displaysOnlyKeywordMatches() {
+        TaskList tasks = new TaskList(List.of(
+                new Todo("read book"),
+                new Todo("submit report"),
+                new Todo("return BOOK")
+        ));
+
+        String output = captureOutput(
+                () -> new FindCommand("book").execute(
+                        tasks, new Ui(), new Storage(temporaryDirectory)));
+
+        assertTrue(output.contains("1.[T][ ] read book"));
+        assertTrue(output.contains("2.[T][ ] return BOOK"));
+        assertFalse(output.contains("[T][ ] submit report"));
+    }
+
+    @Test
+    void findDateCommand_execute_displaysTasksOnDate() {
         LocalDate date = LocalDate.of(2026, 8, 10);
         TaskList tasks = new TaskList(List.of(
                 new Todo("read book"),
@@ -125,7 +144,7 @@ class CommandTest {
         ));
 
         String output = captureOutput(
-                () -> new FindCommand(date).execute(
+                () -> new FindDateCommand(date).execute(
                         tasks, new Ui(), new Storage(temporaryDirectory)));
 
         assertTrue(output.contains("Tasks on 2026-08-10:"));

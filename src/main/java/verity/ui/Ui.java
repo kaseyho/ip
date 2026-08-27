@@ -160,6 +160,28 @@ public class Ui {
     }
 
     /**
+     * Displays tasks whose descriptions match a search keyword.
+     *
+     * @param matchingTasks Tasks matching the keyword.
+     */
+    public void showMatchingTasks(List<Task> matchingTasks) {
+        System.out.println(HORIZONTAL_LINE);
+        System.out.println(
+                "    Here are the matching tasks in your list:\n");
+
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            System.out.println(
+                    "    " + (i + 1) + "."
+                            + matchingTasks.get(i).getStatus());
+        }
+
+        if (matchingTasks.isEmpty()) {
+            System.out.println("    There are no matching tasks.");
+        }
+        System.out.println(HORIZONTAL_LINE);
+    }
+
+    /**
      * Displays an invalid-verity.command or input error.
      *
      * @param message Error message.

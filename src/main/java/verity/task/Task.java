@@ -1,6 +1,7 @@
 package verity.task;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * Represents a task that can be tracked and stored.
@@ -16,6 +17,18 @@ public abstract class Task {
 
     public String getStatus() {
         return "[" + (isDone ? "X" : " ") + "] " + description;
+    }
+
+    /**
+     * Returns whether this task's description contains the keyword.
+     * Matching is case-insensitive.
+     *
+     * @param keyword Keyword to search for.
+     * @return True if the description contains the keyword.
+     */
+    public boolean matchesKeyword(String keyword) {
+        return description.toLowerCase(Locale.ROOT)
+                .contains(keyword.toLowerCase(Locale.ROOT));
     }
 
     /**
