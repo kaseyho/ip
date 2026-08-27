@@ -28,7 +28,7 @@ public class Storage {
     /**
      * Returns the task lines stored in the data file.
      *
-     * @return verity.task.Task lines, or an empty list if the file does not exist.
+     * @return Task lines, or an empty list if the file does not exist.
      * @throws IOException If the data file exists but cannot be read.
      */
     public List<String> loadTaskLines() throws IOException {

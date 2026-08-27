@@ -45,12 +45,6 @@ public class TaskList {
         return tasks.remove(taskIndex);
     }
 
-    /**
-     * Returns a task.
-     *
-     * @param taskIndex Zero-based index of the task.
-     * @return verity.task.Task at the specified index.
-     */
     public Task get(int taskIndex) {
         return tasks.get(taskIndex);
     }
