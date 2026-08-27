@@ -1,3 +1,4 @@
-T	0	read book
-D	0	sell book	2026-06-05
-E	0	buy book	2026-06-06	2026-06-07
+T	0	buy milk
+D	0	submit report	2026-10-10
+E	0	hackathon	2026-10-10	2026-10-12
+E	0	launch	2026-10-11	2026-10-11
