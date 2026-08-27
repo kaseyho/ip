@@ -1,9 +1,14 @@
+package verity.storage;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import verity.task.Task;
+import verity.task.TaskList;
 
 /**
  * Loads tasks from and saves tasks to the data file.
@@ -23,7 +28,7 @@ public class Storage {
     /**
      * Returns the task lines stored in the data file.
      *
-     * @return Task lines, or an empty list if the file does not exist.
+     * @return verity.task.Task lines, or an empty list if the file does not exist.
      * @throws IOException If the data file exists but cannot be read.
      */
     public List<String> loadTaskLines() throws IOException {
