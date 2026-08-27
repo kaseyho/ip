@@ -5,26 +5,26 @@ import verity.task.TaskList;
 import verity.ui.Ui;
 
 /**
- * Represents a verity.command that exits the chatbot.
+ * Represents a command that exits the chatbot.
  */
 public class ExitCommand extends Command {
 
     /**
-     * Creates an exit verity.command.
+     * Creates an exit command.
      */
     public ExitCommand() {
         super(true);
     }
 
     /**
-     * Executes the exit verity.command.
+     * Executes the exit command.
      *
-     * <p>No action is needed because verity.ui.Verity displays the exit message
-     * after leaving its verity.command loop.</p>
+     * <p>No action is needed because Verity displays the exit message
+     * after leaving its command loop.</p>
      *
-     * @param tasks verity.task.Task list, which is not used.
+     * @param tasks Task list, which is not used.
      * @param ui UI, which is not used.
-     * @param storage verity.storage.Storage, which is not used.
+     * @param storage Storage, which is not used.
      */
     @Override
     public void execute(

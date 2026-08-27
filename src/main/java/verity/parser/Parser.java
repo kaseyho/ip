@@ -239,6 +239,13 @@ public class Parser {
         return tasks;
     }
 
+    /**
+     * Parses a date in the {@code yyyy-MM-dd} format.
+     *
+     * @param dateText Date text to parse.
+     * @return Parsed date.
+     * @throws VerityException If the text is not a valid date in the required format.
+     */
     private LocalDate parseDate(String dateText)
             throws VerityException {
         try {
@@ -249,6 +256,15 @@ public class Parser {
         }
     }
 
+    /**
+     * Creates an event after validating its date range.
+     *
+     * @param description Description of the event.
+     * @param fromDate First date of the event.
+     * @param toDate Last date of the event.
+     * @return Event containing the specified information.
+     * @throws VerityException If the end date is before the start date.
+     */
     private Event createEvent(String description, LocalDate fromDate,
                               LocalDate toDate) throws VerityException {
         if (toDate.isBefore(fromDate)) {
@@ -324,6 +340,14 @@ public class Parser {
         return task;
     }
 
+    /**
+     * Joins the words in the specified half-open index range.
+     *
+     * @param commandParts Words to join.
+     * @param startIndex Index of the first word to include.
+     * @param endIndex Index immediately after the last word to include.
+     * @return Words joined using single spaces.
+     */
     private String joinWords(String[] commandParts, int startIndex,
                              int endIndex) {
         StringBuilder result = new StringBuilder();
