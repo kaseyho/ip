@@ -2,6 +2,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Interprets user commands and reconstructs tasks from saved data.
@@ -9,33 +10,39 @@ import java.util.List;
 public class Parser {
 
     /**
-     * Supported chatbot commands.
-     */
-    public enum CommandType {
-        TODO,
-        DEADLINE,
-        EVENT,
-        LIST,
-        FIND,
-        MARK,
-        UNMARK,
-        DELETE,
-        BYE
-    }
-
-    /**
-     * Parses the type of a user command.
+     * Parses a user command and creates the command to execute.
      *
-     * @param word First word of the user command.
-     * @return Corresponding command type.
-     * @throws VerityException If the command type is unknown.
+     * @param fullCommand Complete command entered by the user.
+     * @param taskCount Number of tasks currently stored.
+     * @return Command corresponding to the user input.
+     * @throws VerityException If the command or its arguments are invalid.
      */
-    public CommandType parseCommandType(String word) throws VerityException {
-        try {
-            return CommandType.valueOf(word.toUpperCase());
-        } catch (IllegalArgumentException exception) {
-            throw new VerityException("I don't know that command.");
-        }
+    public Command parse(String fullCommand, int taskCount)
+            throws VerityException {
+        String[] commandParts = fullCommand.trim().split("\\s+");
+        String commandWord =
+                commandParts[0].toLowerCase(Locale.ROOT);
+
+        return switch (commandWord) {
+            case "bye" -> new ExitCommand();
+            case "list" -> new ListCommand();
+            case "mark" -> new MarkCommand(
+                    parseTaskNumber(commandParts, taskCount));
+            case "unmark" -> new UnmarkCommand(
+                    parseTaskNumber(commandParts, taskCount));
+            case "delete" -> new DeleteCommand(
+                    parseTaskNumber(commandParts, taskCount));
+            case "todo" -> new AddCommand(
+                    parseTodo(commandParts));
+            case "deadline" -> new AddCommand(
+                    parseDeadline(commandParts));
+            case "event" -> new AddCommand(
+                    parseEvent(commandParts));
+            case "find" -> new FindCommand(
+                    parseFindDate(commandParts));
+            default -> throw new VerityException(
+                    "I don't know that command.");
+        };
     }
 
     /**
@@ -46,7 +53,7 @@ public class Parser {
      * @return Corresponding zero-based task index.
      * @throws VerityException If the task number is missing or invalid.
      */
-    public int parseTaskNumber(String[] commandParts, int taskCount)
+    private int parseTaskNumber(String[] commandParts, int taskCount)
             throws VerityException {
         if (commandParts.length < 2) {
             throw new VerityException("Please provide a task number.");
@@ -72,7 +79,7 @@ public class Parser {
      * @return Parsed todo.
      * @throws VerityException If the description is missing.
      */
-    public Todo parseTodo(String[] commandParts) throws VerityException {
+    private Todo parseTodo(String[] commandParts) throws VerityException {
         if (commandParts.length == 1) {
             throw new VerityException(
                     "The description of a todo cannot be empty.");
@@ -90,7 +97,7 @@ public class Parser {
      * @return Parsed deadline.
      * @throws VerityException If its description or date is invalid.
      */
-    public Deadline parseDeadline(String[] commandParts)
+    private Deadline parseDeadline(String[] commandParts)
             throws VerityException {
         int partCount = commandParts.length;
         int byIndex = 1;
@@ -127,7 +134,7 @@ public class Parser {
      * @return Parsed event.
      * @throws VerityException If its description or dates are invalid.
      */
-    public Event parseEvent(String[] commandParts)
+    private Event parseEvent(String[] commandParts)
             throws VerityException {
         int partCount = commandParts.length;
         int fromIndex = 1;
@@ -184,7 +191,7 @@ public class Parser {
      * @return Date to search for.
      * @throws VerityException If the command does not contain one date.
      */
-    public LocalDate parseFindDate(String[] commandParts)
+    private LocalDate parseFindDate(String[] commandParts)
             throws VerityException {
         if (commandParts.length != 2) {
             throw new VerityException(
