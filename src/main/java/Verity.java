@@ -5,6 +5,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
 public class Verity {
 	public static final String horizLine = "____________________________________________________________\n";
 
@@ -133,7 +136,7 @@ public class Verity {
 						by.append(commandParts[j]);
 					}
 					String byDate = by.toString();
-					Deadline deadlineTask = new Deadline(desc, byDate);
+					Deadline deadlineTask = new Deadline(desc, parseDate(byDate));
 					tasks.add(deadlineTask);
 					saveTasks(tasks);
 					printAddedMessage(deadlineTask, tasks.size());
@@ -302,6 +305,14 @@ public class Verity {
 		}
 	}
 
+	private static LocalDate parseDate(String dateText) throws VerityException {
+		try {
+			return LocalDate.parse(dateText);
+		} catch (DateTimeParseException exception) {
+			throw new VerityException("Dates must use the format yyyy-MM-dd.");
+		}
+	}
+
 	/**
 	 * Returns tasks reconstructed from saved task lines.
 	 *
@@ -357,7 +368,7 @@ public class Verity {
 					throw new VerityException(
 							"a deadline must have exactly four fields.");
 				}
-				task = new Deadline(fields[2], fields[3]);
+				task = new Deadline(fields[2], parseDate(fields[3]));
 			}
 			case "E" -> {
 				if (fields.length != 5) {
