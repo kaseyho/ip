@@ -12,7 +12,7 @@ import verity.task.TaskList;
 import verity.ui.Ui;
 
 /**
- * Coordinates the chatbot's UI, storage, verity.parser, and task list.
+ * Coordinates the chatbot's UI, storage, parser, and task list.
  */
 public class Verity {
     private final Ui ui;
@@ -33,9 +33,6 @@ public class Verity {
         this.tasks = new TaskList();
     }
 
-    /**
-     * Starts the chatbot and processes commands until the user exits.
-     */
     /**
      * Starts the chatbot and processes commands until the user exits.
      */
@@ -64,6 +61,7 @@ public class Verity {
 
         ui.showExit();
     }
+
     /**
      * Loads saved tasks into the task list.
      *
@@ -86,9 +84,9 @@ public class Verity {
     }
 
     /**
-     * Starts verity.ui.Verity using the default data file.
+     * Starts Verity using the default data file.
      *
-     * @param args verity.command.Command-line arguments, which are not used.
+     * @param args Command-line arguments, which are not used.
      */
     public static void main(String[] args) {
         new Verity(Path.of("data", "verity.txt")).run();

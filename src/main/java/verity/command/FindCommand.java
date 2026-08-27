@@ -9,13 +9,13 @@ import verity.task.TaskList;
 import verity.ui.Ui;
 
 /**
- * Represents a verity.command that finds tasks occurring on a date.
+ * Represents a command that finds tasks occurring on a date.
  */
 public class FindCommand extends Command {
     private final LocalDate date;
 
     /**
-     * Creates a find verity.command.
+     * Creates a find command.
      *
      * @param date Date to search for.
      */
@@ -27,9 +27,9 @@ public class FindCommand extends Command {
     /**
      * Finds and displays tasks occurring on the date.
      *
-     * @param tasks verity.task.Task list to search.
+     * @param tasks Task list to search.
      * @param ui UI used to display matching tasks.
-     * @param storage verity.storage.Storage, which is not used.
+     * @param storage Storage, which is not used.
      */
     @Override
     public void execute(

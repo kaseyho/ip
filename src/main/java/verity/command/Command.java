@@ -7,26 +7,26 @@ import verity.task.TaskList;
 import verity.ui.Ui;
 
 /**
- * Represents an executable user verity.command.
+ * Represents an executable user command.
  */
 public abstract class Command {
     private final boolean isExit;
 
     /**
-     * Creates a verity.command.
+     * Creates a command.
      *
-     * @param isExit Whether this verity.command exits the chatbot.
+     * @param isExit Whether this command exits the chatbot.
      */
     protected Command(boolean isExit) {
         this.isExit = isExit;
     }
 
     /**
-     * Executes the verity.command.
+     * Executes the command.
      *
-     * @param tasks verity.task.Task list to operate on.
+     * @param tasks Task list to operate on.
      * @param ui UI used to display feedback.
-     * @param storage verity.storage.Storage used to save changes.
+     * @param storage Storage used to save changes.
      * @throws IOException If task changes cannot be saved.
      */
     public abstract void execute(
@@ -34,9 +34,9 @@ public abstract class Command {
             throws IOException;
 
     /**
-     * Returns whether this verity.command exits the chatbot.
+     * Returns whether this command exits the chatbot.
      *
-     * @return True if this is an exit verity.command.
+     * @return True if this is an exit command.
      */
     public boolean isExit() {
         return isExit;

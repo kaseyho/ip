@@ -14,6 +14,13 @@ public class Event extends Task {
     private final LocalDate fromDate;
     private final LocalDate toDate;
 
+    /**
+     * Creates an incomplete event with the specified description and date range.
+     *
+     * @param description Description of the event.
+     * @param fromDate First date of the event.
+     * @param toDate Last date of the event.
+     */
     public Event(String description, LocalDate fromDate, LocalDate toDate) {
         super(description);
         this.fromDate = fromDate;

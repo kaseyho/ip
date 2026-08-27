@@ -24,9 +24,9 @@ public class Ui {
     }
 
     /**
-     * Reads the next verity.command entered by the user.
+     * Reads the next command entered by the user.
      *
-     * @return User verity.command.
+     * @return User command.
      */
     public String readCommand() {
         return scanner.nextLine();
@@ -122,7 +122,7 @@ public class Ui {
     /**
      * Displays all tasks.
      *
-     * @param taskList verity.task.Task list to display.
+     * @param taskList Task list to display.
      */
     public void showTaskList(TaskList taskList) {
         System.out.println(HORIZONTAL_LINE);
@@ -156,11 +156,12 @@ public class Ui {
             System.out.println(
                     "    There are no tasks on this date.");
         }
+
         System.out.println(HORIZONTAL_LINE);
     }
 
     /**
-     * Displays an invalid-verity.command or input error.
+     * Displays an invalid command or input error.
      *
      * @param message Error message.
      */

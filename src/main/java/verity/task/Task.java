@@ -9,17 +9,27 @@ public abstract class Task {
     protected String description;
     protected boolean isDone;
 
+    /**
+     * Creates an incomplete task with the specified description.
+     *
+     * @param description Description of the task.
+     */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
     }
 
+    /**
+     * Returns a display string containing the task's completion status and description.
+     *
+     * @return Display string for the task.
+     */
     public String getStatus() {
         return "[" + (isDone ? "X" : " ") + "] " + description;
     }
 
     /**
-     *  Returns a line representing this task in the data file.
+     * Returns a line representing this task in the data file.
      *
      * @return Serialized task data.
      */
@@ -37,10 +47,16 @@ public abstract class Task {
         return isDone ? "1" : "0";
     }
 
+    /**
+     * Marks this task as completed.
+     */
     public void markAsDone() {
         this.isDone = true;
     }
 
+    /**
+     * Marks this task as incomplete.
+     */
     public void markAsUndone() {
         this.isDone = false;
     }

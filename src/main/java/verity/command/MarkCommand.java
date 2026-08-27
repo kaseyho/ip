@@ -8,13 +8,13 @@ import verity.task.TaskList;
 import verity.ui.Ui;
 
 /**
- * Represents a verity.command that marks a task as completed.
+ * Represents a command that marks a task as completed.
  */
 public class MarkCommand extends Command {
     private final int taskIndex;
 
     /**
-     * Creates a mark verity.command.
+     * Creates a mark command.
      *
      * @param taskIndex Zero-based index of the task.
      */
@@ -26,9 +26,9 @@ public class MarkCommand extends Command {
     /**
      * Marks the task and saves the updated task list.
      *
-     * @param tasks verity.task.Task list to update.
+     * @param tasks Task list to update.
      * @param ui UI used to display feedback.
-     * @param storage verity.storage.Storage used to save the task list.
+     * @param storage Storage used to save the task list.
      * @throws IOException If the task list cannot be saved.
      */
     @Override

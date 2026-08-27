@@ -26,12 +26,12 @@ import verity.task.Todo;
 public class Parser {
 
     /**
-     * Parses a user verity.command and creates the verity.command to execute.
+     * Parses user input and creates the command to execute.
      *
-     * @param fullCommand Complete verity.command entered by the user.
+     * @param fullCommand Complete command entered by the user.
      * @param taskCount Number of tasks currently stored.
-     * @return verity.command.Command corresponding to the user input.
-     * @throws VerityException If the verity.command or its arguments are invalid.
+     * @return Command corresponding to the user input.
+     * @throws VerityException If the command or its arguments are invalid.
      */
     public Command parse(String fullCommand, int taskCount)
             throws VerityException {
@@ -64,7 +64,7 @@ public class Parser {
     /**
      * Parses and validates a one-based task number.
      *
-     * @param commandParts Parts of the user verity.command.
+     * @param commandParts Parts of the user command.
      * @param taskCount Number of tasks currently stored.
      * @return Corresponding zero-based task index.
      * @throws VerityException If the task number is missing or invalid.
@@ -75,23 +75,23 @@ public class Parser {
             throw new VerityException("Please provide a task number.");
         }
 
-        int taskNumber;
+        int taskIndex;
         try {
-            taskNumber = Integer.parseInt(commandParts[1]) - 1;
+            taskIndex = Integer.parseInt(commandParts[1]) - 1;
         } catch (NumberFormatException exception) {
             throw new VerityException("The task number must be a number.");
         }
 
-        if (taskNumber < 0 || taskNumber >= taskCount) {
+        if (taskIndex < 0 || taskIndex >= taskCount) {
             throw new VerityException("That task number does not exist.");
         }
-        return taskNumber;
+        return taskIndex;
     }
 
     /**
-     * Parses a todo verity.command.
+     * Parses a todo command.
      *
-     * @param commandParts Parts of the user verity.command.
+     * @param commandParts Parts of the user command.
      * @return Parsed todo.
      * @throws VerityException If the description is missing.
      */
@@ -107,9 +107,9 @@ public class Parser {
     }
 
     /**
-     * Parses a deadline verity.command.
+     * Parses a deadline command.
      *
-     * @param commandParts Parts of the user verity.command.
+     * @param commandParts Parts of the user command.
      * @return Parsed deadline.
      * @throws VerityException If its description or date is invalid.
      */
@@ -144,9 +144,9 @@ public class Parser {
     }
 
     /**
-     * Parses an event verity.command.
+     * Parses an event command.
      *
-     * @param commandParts Parts of the user verity.command.
+     * @param commandParts Parts of the user command.
      * @return Parsed event.
      * @throws VerityException If its description or dates are invalid.
      */
@@ -201,11 +201,11 @@ public class Parser {
     }
 
     /**
-     * Parses the date supplied to a find verity.command.
+     * Parses the date supplied to a find command.
      *
-     * @param commandParts Parts of the user verity.command.
+     * @param commandParts Parts of the user command.
      * @return Date to search for.
-     * @throws VerityException If the verity.command does not contain one date.
+     * @throws VerityException If the command does not contain one date.
      */
     private LocalDate parseFindDate(String[] commandParts)
             throws VerityException {
@@ -213,6 +213,7 @@ public class Parser {
             throw new VerityException(
                     "Use find followed by a date in yyyy-MM-dd format.");
         }
+
         return parseDate(commandParts[1]);
     }
 
@@ -236,9 +237,17 @@ public class Parser {
                                 + exception.getMessage());
             }
         }
+
         return tasks;
     }
 
+    /**
+     * Parses a date in ISO-8601 format.
+     *
+     * @param dateText Date text to parse.
+     * @return Parsed date.
+     * @throws VerityException If the date text is invalid.
+     */
     private LocalDate parseDate(String dateText)
             throws VerityException {
         try {
@@ -249,12 +258,22 @@ public class Parser {
         }
     }
 
+    /**
+     * Creates an event after validating its date range.
+     *
+     * @param description Description of the event.
+     * @param fromDate First date of the event.
+     * @param toDate Last date of the event.
+     * @return Event with the specified details.
+     * @throws VerityException If the end date is before the start date.
+     */
     private Event createEvent(String description, LocalDate fromDate,
-                              LocalDate toDate) throws VerityException {
+            LocalDate toDate) throws VerityException {
         if (toDate.isBefore(fromDate)) {
             throw new VerityException(
                     "The event end date cannot be before the start date.");
         }
+
         return new Event(description, fromDate, toDate);
     }
 
@@ -321,11 +340,12 @@ public class Parser {
         if (storedStatus.equals("1")) {
             task.markAsDone();
         }
+
         return task;
     }
 
     private String joinWords(String[] commandParts, int startIndex,
-                             int endIndex) {
+            int endIndex) {
         StringBuilder result = new StringBuilder();
 
         for (int i = startIndex; i < endIndex; i++) {
@@ -334,6 +354,7 @@ public class Parser {
             }
             result.append(commandParts[i]);
         }
+
         return result.toString();
     }
 }
