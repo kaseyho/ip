@@ -1,9 +1,13 @@
 package verity.gui;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Objects;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -15,20 +19,27 @@ import javafx.scene.layout.HBox;
  * Represents a dialog box containing a message and speaker avatar.
  */
 public class DialogBox extends HBox {
-    private final Label dialog;
-    private final ImageView displayPicture;
+    @FXML
+    private Label dialog;
+    @FXML
+    private ImageView displayPicture;
 
     private DialogBox(String text, Image image) {
-        dialog = new Label(text);
-        displayPicture = new ImageView(image);
+        URL fxmlUrl = Objects.requireNonNull(
+                MainWindow.class.getResource("/view/DialogBox.fxml"),
+                "Missing DialogBox.fxml resource.");
+        FXMLLoader fxmlLoader = new FXMLLoader(fxmlUrl);
+        fxmlLoader.setController(this);
+        fxmlLoader.setRoot(this);
 
-        dialog.setWrapText(true);
-        displayPicture.setFitWidth(100.0);
-        displayPicture.setFitHeight(100.0);
-        displayPicture.setPreserveRatio(true);
-        setAlignment(Pos.TOP_RIGHT);
-
-        getChildren().addAll(dialog, displayPicture);
+        try {
+            fxmlLoader.load();
+            dialog.setText(text);
+            displayPicture.setImage(image);
+        } catch (IOException | RuntimeException exception) {
+            throw new IllegalStateException(
+                    "Could not load DialogBox.fxml.", exception);
+        }
     }
 
     /**
@@ -61,10 +72,10 @@ public class DialogBox extends HBox {
      * Places the avatar on the left and the message on the right.
      */
     private void flip() {
+        setAlignment(Pos.TOP_LEFT);
         ObservableList<Node> children =
                 FXCollections.observableArrayList(getChildren());
-        Collections.reverse(children);
+        FXCollections.reverse(children);
         getChildren().setAll(children);
-        setAlignment(Pos.TOP_LEFT);
     }
 }

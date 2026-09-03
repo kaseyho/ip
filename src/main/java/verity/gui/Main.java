@@ -1,17 +1,13 @@
 package verity.gui;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
 
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import verity.Verity;
@@ -20,86 +16,26 @@ import verity.Verity;
  * Starts Verity's JavaFX graphical user interface.
  */
 public class Main extends Application {
-    private final Image userImage = new Image(Objects.requireNonNull(
-            getClass().getResourceAsStream(
-                    "/images/verity_user.png"),
-            "Missing user avatar resource."));
-    private final Image verityImage = new Image(Objects.requireNonNull(
-            getClass().getResourceAsStream(
-                    "/images/verity_bot.png"),
-            "Missing Verity avatar resource."));
     private final Verity verity =
             new Verity(Path.of("data", "verity.txt"));
 
-    private ScrollPane scrollPane;
-    private VBox dialogContainer;
-    private TextField userInput;
-    private Button sendButton;
-
     @Override
     public void start(Stage stage) {
-        scrollPane = new ScrollPane();
-        dialogContainer = new VBox();
-        scrollPane.setContent(dialogContainer);
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Objects.requireNonNull(
+                    Main.class.getResource("/view/MainWindow.fxml"),
+                    "Missing MainWindow.fxml resource."));
+            AnchorPane mainLayout = fxmlLoader.load();
+            MainWindow mainWindow = fxmlLoader.getController();
+            mainWindow.setVerity(verity);
 
-        userInput = new TextField();
-        sendButton = new Button("Send");
-
-        AnchorPane mainLayout = new AnchorPane();
-        mainLayout.getChildren().addAll(
-                scrollPane, userInput, sendButton);
-
-        Scene scene = new Scene(mainLayout);
-        stage.setScene(scene);
-
-        stage.setTitle("Verity");
-        stage.setResizable(false);
-        stage.setMinHeight(600.0);
-        stage.setMinWidth(400.0);
-
-        mainLayout.setPrefSize(400.0, 600.0);
-
-        scrollPane.setPrefSize(385.0, 535.0);
-        scrollPane.setHbarPolicy(
-                ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(
-                ScrollPane.ScrollBarPolicy.ALWAYS);
-        scrollPane.setVvalue(1.0);
-        scrollPane.setFitToWidth(true);
-
-        dialogContainer.setPrefHeight(
-                Region.USE_COMPUTED_SIZE);
-
-        userInput.setPrefWidth(325.0);
-        sendButton.setPrefWidth(55.0);
-
-        AnchorPane.setTopAnchor(scrollPane, 1.0);
-        AnchorPane.setBottomAnchor(sendButton, 1.0);
-        AnchorPane.setRightAnchor(sendButton, 1.0);
-        AnchorPane.setLeftAnchor(userInput, 1.0);
-        AnchorPane.setBottomAnchor(userInput, 1.0);
-
-        sendButton.setOnMouseClicked(
-                event -> handleUserInput());
-        userInput.setOnAction(
-                event -> handleUserInput());
-        dialogContainer.heightProperty().addListener(
-                observable -> scrollPane.setVvalue(1.0));
-
-        stage.show();
-    }
-
-    /**
-     * Displays the user's input and Verity's response.
-     */
-    private void handleUserInput() {
-        String input = userInput.getText();
-        String response = verity.getResponse(input);
-
-        dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(input, userImage),
-                DialogBox.getVerityDialog(response, verityImage)
-        );
-        userInput.clear();
+            stage.setScene(new Scene(mainLayout));
+            stage.setTitle("Verity");
+            stage.setResizable(false);
+            stage.show();
+        } catch (IOException | RuntimeException exception) {
+            throw new IllegalStateException(
+                    "Could not load MainWindow.fxml.", exception);
+        }
     }
 }

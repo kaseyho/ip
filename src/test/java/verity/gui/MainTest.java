@@ -21,4 +21,16 @@ class MainTest {
                                 "/images/verity_bot.png"))
         );
     }
+
+    @Test
+    void fxmlViews_arePackagedWithApplication() {
+        assertAll(
+                () -> assertNotNull(
+                        Main.class.getResource(
+                                "/view/MainWindow.fxml")),
+                () -> assertNotNull(
+                        Main.class.getResource(
+                                "/view/DialogBox.fxml"))
+        );
+    }
 }
