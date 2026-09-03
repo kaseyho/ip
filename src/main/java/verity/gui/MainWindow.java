@@ -60,12 +60,24 @@ public class MainWindow extends AnchorPane {
         String input = userInput.getText();
         String response = verity.getResponse(input);
         String commandType = verity.getCommandType();
+        String guiResponse = formatResponseForGui(response);
 
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
                 DialogBox.getVerityDialog(
-                        response, verityImage, commandType));
+                        guiResponse, verityImage, commandType));
         userInput.clear();
+    }
+
+    /**
+     * Removes console-only separator lines before displaying a response in
+     * the graphical interface.
+     *
+     * @param response Response formatted by the shared UI.
+     * @return Response without ASCII separator lines or outer whitespace.
+     */
+    private static String formatResponseForGui(String response) {
+        return response.replaceAll("(?m)^_+\\R", "").trim();
     }
 
     /**
