@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -62,7 +61,7 @@ class CommandTest {
     @Test
     void deleteCommand_execute_removesTaskAndSavesIt() throws IOException {
         Todo todo = new Todo("read book");
-        TaskList tasks = new TaskList(List.of(todo));
+        TaskList tasks = new TaskList(todo);
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
 
         new DeleteCommand(0).execute(
@@ -75,7 +74,7 @@ class CommandTest {
     @Test
     void markCommand_execute_marksTaskAndSavesIt() throws IOException {
         Todo todo = new Todo("read book");
-        TaskList tasks = new TaskList(List.of(todo));
+        TaskList tasks = new TaskList(todo);
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
 
         new MarkCommand(0).execute(
@@ -91,7 +90,7 @@ class CommandTest {
     void unmarkCommand_execute_unmarksTaskAndSavesIt() throws IOException {
         Todo todo = new Todo("read book");
         todo.markAsDone();
-        TaskList tasks = new TaskList(List.of(todo));
+        TaskList tasks = new TaskList(todo);
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
 
         new UnmarkCommand(0).execute(
@@ -105,8 +104,7 @@ class CommandTest {
 
     @Test
     void listCommand_execute_returnsAllTasks() {
-        TaskList tasks = new TaskList(
-                List.of(new Todo("read book")));
+        TaskList tasks = new TaskList(new Todo("read book"));
 
         String response = new ListCommand().execute(
                 tasks, new Ui(), new Storage(temporaryDirectory));
@@ -116,11 +114,11 @@ class CommandTest {
 
     @Test
     void findCommand_execute_returnsOnlyKeywordMatches() {
-        TaskList tasks = new TaskList(List.of(
+        TaskList tasks = new TaskList(
                 new Todo("read book"),
                 new Todo("submit report"),
                 new Todo("return BOOK")
-        ));
+        );
 
         String response = new FindCommand("book").execute(
                 tasks, new Ui(), new Storage(temporaryDirectory));
@@ -133,10 +131,10 @@ class CommandTest {
     @Test
     void findDateCommand_execute_returnsTasksOnDate() {
         LocalDate date = LocalDate.of(2026, 8, 10);
-        TaskList tasks = new TaskList(List.of(
+        TaskList tasks = new TaskList(
                 new Todo("read book"),
                 new Deadline("submit report", date)
-        ));
+        );
 
         String response = new FindDateCommand(date).execute(
                 tasks, new Ui(), new Storage(temporaryDirectory));

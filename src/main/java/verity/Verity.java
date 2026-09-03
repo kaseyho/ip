@@ -8,6 +8,7 @@ import verity.command.Command;
 import verity.exception.VerityException;
 import verity.parser.Parser;
 import verity.storage.Storage;
+import verity.task.Task;
 import verity.task.TaskList;
 import verity.ui.Ui;
 
@@ -119,7 +120,9 @@ public class Verity {
      */
     private void restoreTasks(List<String> taskSnapshot) {
         try {
-            tasks = new TaskList(parser.parseSavedTasks(taskSnapshot));
+            tasks = new TaskList(
+                    parser.parseSavedTasks(taskSnapshot)
+                            .toArray(Task[]::new));
         } catch (VerityException exception) {
             throw new IllegalStateException(
                     "Could not restore the task list.", exception);
@@ -140,7 +143,8 @@ public class Verity {
         try {
             List<String> savedTaskLines = storage.loadTaskLines();
             tasks = new TaskList(
-                    parser.parseSavedTasks(savedTaskLines));
+                    parser.parseSavedTasks(savedTaskLines)
+                            .toArray(Task[]::new));
             return true;
         } catch (IOException exception) {
             initializationErrorMessage = ui.getLoadingErrorMessage();

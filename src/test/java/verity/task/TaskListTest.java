@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ class TaskListTest {
     @Test
     void delete_existingTask_returnsTaskAndRemovesIt() {
         Todo todo = new Todo("read book");
-        TaskList taskList = new TaskList(List.of(todo));
+        TaskList taskList = new TaskList(todo);
 
         Task deletedTask = taskList.delete(0);
 
@@ -52,7 +51,7 @@ class TaskListTest {
     @Test
     void mark_task_marksTaskAsDoneAndReturnsIt() {
         Todo todo = new Todo("read book");
-        TaskList taskList = new TaskList(List.of(todo));
+        TaskList taskList = new TaskList(todo);
 
         Task markedTask = taskList.mark(0);
 
@@ -64,7 +63,7 @@ class TaskListTest {
     void unmark_completedTask_marksTaskAsUndoneAndReturnsIt() {
         Todo todo = new Todo("read book");
         todo.markAsDone();
-        TaskList taskList = new TaskList(List.of(todo));
+        TaskList taskList = new TaskList(todo);
 
         Task unmarkedTask = taskList.unmark(0);
 
@@ -81,7 +80,7 @@ class TaskListTest {
                 MATCHING_DATE.minusDays(1),
                 MATCHING_DATE.plusDays(1)
         );
-        TaskList taskList = new TaskList(List.of(todo, deadline, event));
+        TaskList taskList = new TaskList(todo, deadline, event);
 
         List<Task> matchingTasks = taskList.findOn(MATCHING_DATE);
 
@@ -90,8 +89,7 @@ class TaskListTest {
 
     @Test
     void findOn_dateWithNoMatches_returnsEmptyList() {
-        TaskList taskList = new TaskList(
-                List.of(new Todo("read book")));
+        TaskList taskList = new TaskList(new Todo("read book"));
 
         assertTrue(taskList.findOn(MATCHING_DATE).isEmpty());
     }
@@ -102,7 +100,7 @@ class TaskListTest {
         Deadline nonMatch = new Deadline("submit report", MATCHING_DATE);
         Todo secondMatch = new Todo("return BOOK");
         TaskList taskList = new TaskList(
-                List.of(firstMatch, nonMatch, secondMatch));
+                firstMatch, nonMatch, secondMatch);
 
         List<Task> matchingTasks = taskList.findByKeyword("BoOk");
 
@@ -111,20 +109,18 @@ class TaskListTest {
 
     @Test
     void findByKeyword_keywordWithNoMatches_returnsEmptyList() {
-        TaskList taskList = new TaskList(
-                List.of(new Todo("read book")));
+        TaskList taskList = new TaskList(new Todo("read book"));
 
         assertTrue(taskList.findByKeyword("report").isEmpty());
     }
 
     @Test
-    void constructor_initialListIsCopied() {
-        List<Task> initialTasks = new ArrayList<>();
+    void constructor_initialVarargsArrayIsCopied() {
         Todo todo = new Todo("read book");
-        initialTasks.add(todo);
+        Task[] initialTasks = {todo};
 
         TaskList taskList = new TaskList(initialTasks);
-        initialTasks.clear();
+        initialTasks[0] = new Todo("write book");
 
         assertEquals(1, taskList.size());
         assertSame(todo, taskList.get(0));
@@ -132,8 +128,7 @@ class TaskListTest {
 
     @Test
     void getTasks_returnsReadOnlySnapshot() {
-        TaskList taskList = new TaskList(
-                List.of(new Todo("read book")));
+        TaskList taskList = new TaskList(new Todo("read book"));
 
         List<Task> snapshot = taskList.getTasks();
 

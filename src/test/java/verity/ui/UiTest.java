@@ -106,10 +106,10 @@ class UiTest {
 
     @Test
     void getTaskListMessage_returnsNumberedTasks() {
-        TaskList tasks = new TaskList(List.of(
+        TaskList tasks = new TaskList(
                 new Todo("read book"),
                 new Deadline("submit report", LocalDate.of(2026, 8, 10))
-        ));
+        );
 
         String response = new Ui().getTaskListMessage(tasks);
 
