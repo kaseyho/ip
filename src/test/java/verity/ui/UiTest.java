@@ -93,10 +93,10 @@ class UiTest {
 
     @Test
     void showTaskList_printsNumberedTasks() {
-        TaskList tasks = new TaskList(List.of(
+        TaskList tasks = new TaskList(
                 new Todo("read book"),
                 new Deadline("submit report", LocalDate.of(2026, 8, 10))
-        ));
+        );
 
         String output = captureOutput(
                 () -> new Ui().showTaskList(tasks));

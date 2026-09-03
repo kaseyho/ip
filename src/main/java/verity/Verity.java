@@ -8,6 +8,7 @@ import verity.command.Command;
 import verity.exception.VerityException;
 import verity.parser.Parser;
 import verity.storage.Storage;
+import verity.task.Task;
 import verity.task.TaskList;
 import verity.ui.Ui;
 
@@ -72,7 +73,8 @@ public class Verity {
             List<String> savedTaskLines =
                     storage.loadTaskLines();
             tasks = new TaskList(
-                    parser.parseSavedTasks(savedTaskLines));
+                    parser.parseSavedTasks(savedTaskLines)
+                            .toArray(Task[]::new));
             return true;
         } catch (IOException exception) {
             ui.showLoadingError();
