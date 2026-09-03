@@ -17,18 +17,16 @@ public class ExitCommand extends Command {
     }
 
     /**
-     * Executes the exit command.
-     *
-     * <p>No action is needed because Verity displays the exit message
-     * after leaving its command loop.</p>
+     * Returns Verity's exit message.
      *
      * @param tasks Task list, which is not used.
-     * @param ui UI, which is not used.
+     * @param ui UI used to format the exit message.
      * @param storage Storage, which is not used.
+     * @return Exit message.
      */
     @Override
-    public void execute(
+    public String execute(
             TaskList tasks, Ui ui, Storage storage) {
-        // Exiting is handled through isExit().
+        return ui.getExitMessage();
     }
 }

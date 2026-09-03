@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -107,71 +104,56 @@ class CommandTest {
     }
 
     @Test
-    void listCommand_execute_displaysAllTasks() {
+    void listCommand_execute_returnsAllTasks() {
         TaskList tasks = new TaskList(
                 List.of(new Todo("read book")));
 
-        String output = captureOutput(
-                () -> new ListCommand().execute(
-                        tasks, new Ui(), new Storage(temporaryDirectory)));
+        String response = new ListCommand().execute(
+                tasks, new Ui(), new Storage(temporaryDirectory));
 
-        assertTrue(output.contains("1.[T][ ] read book"));
+        assertTrue(response.contains("1.[T][ ] read book"));
     }
 
     @Test
-    void findCommand_execute_displaysOnlyKeywordMatches() {
+    void findCommand_execute_returnsOnlyKeywordMatches() {
         TaskList tasks = new TaskList(List.of(
                 new Todo("read book"),
                 new Todo("submit report"),
                 new Todo("return BOOK")
         ));
 
-        String output = captureOutput(
-                () -> new FindCommand("book").execute(
-                        tasks, new Ui(), new Storage(temporaryDirectory)));
+        String response = new FindCommand("book").execute(
+                tasks, new Ui(), new Storage(temporaryDirectory));
 
-        assertTrue(output.contains("1.[T][ ] read book"));
-        assertTrue(output.contains("2.[T][ ] return BOOK"));
-        assertFalse(output.contains("[T][ ] submit report"));
+        assertTrue(response.contains("1.[T][ ] read book"));
+        assertTrue(response.contains("2.[T][ ] return BOOK"));
+        assertFalse(response.contains("[T][ ] submit report"));
     }
 
     @Test
-    void findDateCommand_execute_displaysTasksOnDate() {
+    void findDateCommand_execute_returnsTasksOnDate() {
         LocalDate date = LocalDate.of(2026, 8, 10);
         TaskList tasks = new TaskList(List.of(
                 new Todo("read book"),
                 new Deadline("submit report", date)
         ));
 
-        String output = captureOutput(
-                () -> new FindDateCommand(date).execute(
-                        tasks, new Ui(), new Storage(temporaryDirectory)));
+        String response = new FindDateCommand(date).execute(
+                tasks, new Ui(), new Storage(temporaryDirectory));
 
-        assertTrue(output.contains("Tasks on 2026-08-10:"));
-        assertTrue(output.contains("[D][ ] submit report"));
-        assertFalse(output.contains("[T][ ] read book"));
+        assertTrue(response.contains("Tasks on 2026-08-10:"));
+        assertTrue(response.contains("[D][ ] submit report"));
+        assertFalse(response.contains("[T][ ] read book"));
     }
 
     @Test
-    void exitCommand_execute_doesNotChangeTasks() {
+    void exitCommand_execute_returnsExitMessageWithoutChangingTasks() {
         TaskList tasks = new TaskList();
 
-        new ExitCommand().execute(
+        String response = new ExitCommand().execute(
                 tasks, new Ui(), new Storage(temporaryDirectory));
 
+        assertTrue(response.contains("Bye. Hope to see you again soon!"));
         assertEquals(0, tasks.size());
-    }
-
-    private static String captureOutput(Runnable action) {
-        PrintStream originalOutput = System.out;
-        ByteArrayOutputStream capturedOutput = new ByteArrayOutputStream();
-        try (PrintStream replacementOutput = new PrintStream(
-                capturedOutput, true, StandardCharsets.UTF_8)) {
-            System.setOut(replacementOutput);
-            action.run();
-        } finally {
-            System.setOut(originalOutput);
-        }
-        return capturedOutput.toString(StandardCharsets.UTF_8);
     }
 }

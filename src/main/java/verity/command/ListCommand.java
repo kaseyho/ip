@@ -17,15 +17,16 @@ public class ListCommand extends Command {
     }
 
     /**
-     * Displays all tasks.
+     * Returns all tasks.
      *
      * @param tasks Task list to display.
-     * @param ui UI used to display the task list.
+     * @param ui UI used to format the task list.
      * @param storage Storage, which is not used.
+     * @return User-facing response after execution.
      */
     @Override
-    public void execute(
+    public String execute(
             TaskList tasks, Ui ui, Storage storage) {
-        ui.showTaskList(tasks);
+        return ui.getTaskListMessage(tasks);
     }
 }

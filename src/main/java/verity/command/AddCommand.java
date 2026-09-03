@@ -24,19 +24,20 @@ public class AddCommand extends Command {
     }
 
     /**
-     * Adds the task, saves the updated task list, and displays feedback.
+     * Adds the task, saves the updated task list, and returns feedback.
      *
      * @param tasks Task list to update.
-     * @param ui UI used to display feedback.
+     * @param ui UI used to format feedback.
      * @param storage Storage used to save the task list.
+     * @return User-facing response after execution.
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public void execute(
+    public String execute(
             TaskList tasks, Ui ui, Storage storage)
             throws IOException {
         tasks.add(task);
         storage.saveTasks(tasks);
-        ui.showTaskAdded(task, tasks.size());
+        return ui.getTaskAddedMessage(task, tasks.size());
     }
 }

@@ -25,16 +25,17 @@ public class FindDateCommand extends Command {
     }
 
     /**
-     * Finds and displays tasks occurring on the date.
+     * Finds and returns tasks occurring on the date.
      *
      * @param tasks Task list to search.
-     * @param ui UI used to display matching tasks.
+     * @param ui UI used to format matching tasks.
      * @param storage Storage, which is not used.
+     * @return User-facing response after execution.
      */
     @Override
-    public void execute(
+    public String execute(
             TaskList tasks, Ui ui, Storage storage) {
         List<Task> matchingTasks = tasks.findOn(date);
-        ui.showTasksOn(date, matchingTasks);
+        return ui.getTasksOnMessage(date, matchingTasks);
     }
 }

@@ -24,16 +24,17 @@ public class FindCommand extends Command {
     }
 
     /**
-     * Finds and displays tasks whose descriptions contain the keyword.
+     * Finds and returns tasks whose descriptions contain the keyword.
      *
-     * @param tasks verity.task.Task list to search.
-     * @param ui UI used to display matching tasks.
-     * @param storage verity.storage.Storage, which is not used.
+     * @param tasks Task list to search.
+     * @param ui UI used to format matching tasks.
+     * @param storage Storage, which is not used.
+     * @return User-facing response after execution.
      */
     @Override
-    public void execute(
+    public String execute(
             TaskList tasks, Ui ui, Storage storage) {
         List<Task> matchingTasks = tasks.findByKeyword(keyword);
-        ui.showMatchingTasks(matchingTasks);
+        return ui.getMatchingTasksMessage(matchingTasks);
     }
 }

@@ -20,6 +20,8 @@ public class Verity {
     private final Parser parser;
 
     private TaskList tasks;
+    private boolean isInitialized;
+    private String initializationErrorMessage;
 
     /**
      * Creates a chatbot that stores its tasks at the specified path.
@@ -31,15 +33,18 @@ public class Verity {
         this.storage = new Storage(dataFilePath);
         this.parser = new Parser();
         this.tasks = new TaskList();
+        this.isInitialized = false;
+        this.initializationErrorMessage = null;
     }
 
     /**
      * Starts the chatbot and processes commands until the user exits.
      */
     public void run() {
-        ui.showGreeting();
+        System.out.println(ui.getGreeting());
 
-        if (!loadTasks()) {
+        if (!initialize()) {
+            System.out.println(initializationErrorMessage);
             return;
         }
 
@@ -49,36 +54,87 @@ public class Verity {
                 String fullCommand = ui.readCommand();
                 Command command =
                         parser.parse(fullCommand, tasks.size());
-                command.execute(tasks, ui, storage);
+                String response =
+                        command.execute(tasks, ui, storage);
+
+                System.out.println(response);
                 isExit = command.isExit();
             } catch (VerityException exception) {
-                ui.showCommandError(exception.getMessage());
+                System.out.println(ui.getCommandErrorMessage(
+                        exception.getMessage()));
             } catch (IOException exception) {
-                ui.showSavingError();
+                System.out.println(ui.getSavingErrorMessage());
                 return;
             }
         }
-
-        ui.showExit();
     }
 
     /**
-     * Loads saved tasks into the task list.
+     * Returns Verity's response to one user command.
      *
-     * @return True if loading succeeded.
+     * @param input User command to process.
+     * @return Verity's response.
      */
-    private boolean loadTasks() {
+    public String getResponse(String input) {
+        if (!initialize()) {
+            return initializationErrorMessage;
+        }
+
+        Command command;
         try {
-            List<String> savedTaskLines =
-                    storage.loadTaskLines();
+            command = parser.parse(input, tasks.size());
+        } catch (VerityException exception) {
+            return ui.getCommandErrorMessage(exception.getMessage());
+        }
+
+        List<String> taskSnapshot = tasks.getTasks().stream()
+                .map(task -> task.serialize())
+                .toList();
+        try {
+            return command.execute(tasks, ui, storage);
+        } catch (IOException exception) {
+            restoreTasks(taskSnapshot);
+            return ui.getSavingErrorMessage();
+        }
+    }
+
+    /**
+     * Restores the in-memory task list after a command fails to save.
+     *
+     * @param taskSnapshot Serialized tasks from before command execution.
+     */
+    private void restoreTasks(List<String> taskSnapshot) {
+        try {
+            tasks = new TaskList(parser.parseSavedTasks(taskSnapshot));
+        } catch (VerityException exception) {
+            throw new IllegalStateException(
+                    "Could not restore the task list.", exception);
+        }
+    }
+
+    /**
+     * Loads saved tasks the first time Verity is used.
+     *
+     * @return True if initialization succeeded.
+     */
+    private boolean initialize() {
+        if (isInitialized) {
+            return initializationErrorMessage == null;
+        }
+
+        isInitialized = true;
+        try {
+            List<String> savedTaskLines = storage.loadTaskLines();
             tasks = new TaskList(
                     parser.parseSavedTasks(savedTaskLines));
             return true;
         } catch (IOException exception) {
-            ui.showLoadingError();
+            initializationErrorMessage = ui.getLoadingErrorMessage();
             return false;
         } catch (VerityException exception) {
-            ui.showCorruptedDataError(exception.getMessage());
+            initializationErrorMessage =
+                    ui.getCorruptedDataErrorMessage(
+                            exception.getMessage());
             return false;
         }
     }

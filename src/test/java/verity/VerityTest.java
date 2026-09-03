@@ -1,5 +1,6 @@
 package verity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -91,6 +92,59 @@ class VerityTest {
 
         assertTrue(output.contains("The saved task data is corrupted."));
         assertFalse(output.contains("Bye. Hope to see you again soon!"));
+    }
+
+    @Test
+    void getResponse_addCommand_returnsResponseAndPersistsTask()
+            throws IOException {
+        Path dataFile = temporaryDirectory.resolve("tasks.txt");
+        Verity verity = new Verity(dataFile);
+
+        String response = verity.getResponse("todo read book");
+
+        assertTrue(response.contains("I've added this task"));
+        assertTrue(response.contains("[T][ ] read book"));
+        assertEquals(
+                "T\t0\tread book" + System.lineSeparator(),
+                Files.readString(dataFile));
+    }
+
+    @Test
+    void getResponse_existingData_listsSavedTask() throws IOException {
+        Path dataFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(
+                dataFile,
+                "T\t0\tread book" + System.lineSeparator(),
+                StandardCharsets.UTF_8);
+        Verity verity = new Verity(dataFile);
+
+        String response = verity.getResponse("list");
+
+        assertTrue(response.contains("1.[T][ ] read book"));
+    }
+
+    @Test
+    void getResponse_invalidCommand_returnsErrorMessage() {
+        Verity verity = new Verity(
+                temporaryDirectory.resolve("tasks.txt"));
+
+        String response = verity.getResponse("unknown");
+
+        assertTrue(response.contains("I don't know that command."));
+    }
+
+    @Test
+    void getResponse_savingFailure_doesNotRetainUnsavedTask()
+            throws IOException {
+        Path dataDirectory = temporaryDirectory.resolve("data");
+        Files.writeString(dataDirectory, "not a directory");
+        Verity verity = new Verity(dataDirectory.resolve("tasks.txt"));
+
+        String errorResponse = verity.getResponse("todo phantom");
+        String listResponse = verity.getResponse("list");
+
+        assertTrue(errorResponse.contains("I could not save your tasks."));
+        assertFalse(listResponse.contains("phantom"));
     }
 
     private static String runWithInput(Path dataFile, String input) {

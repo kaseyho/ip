@@ -27,16 +27,17 @@ public class MarkCommand extends Command {
      * Marks the task and saves the updated task list.
      *
      * @param tasks Task list to update.
-     * @param ui UI used to display feedback.
+     * @param ui UI used to format feedback.
      * @param storage Storage used to save the task list.
+     * @return User-facing response after execution.
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public void execute(
+    public String execute(
             TaskList tasks, Ui ui, Storage storage)
             throws IOException {
         Task markedTask = tasks.mark(taskIndex);
         storage.saveTasks(tasks);
-        ui.showTaskMarked(markedTask);
+        return ui.getTaskMarkedMessage(markedTask);
     }
 }

@@ -4,9 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,9 +16,12 @@ import verity.task.TaskList;
 import verity.task.Todo;
 
 /**
- * Tests user input and output handled by the UI.
+ * Tests user input and responses formatted by the UI.
  */
 class UiTest {
+    private static final String HORIZONTAL_LINE =
+            "____________________________________________________________\n";
+
     @Test
     void readCommand_inputLine_returnsLine() {
         InputStream originalInput = System.in;
@@ -36,144 +37,149 @@ class UiTest {
     }
 
     @Test
-    void showGreeting_printsWelcomeMessage() {
-        String output = captureOutput(() -> new Ui().showGreeting());
+    void getGreeting_returnsWelcomeMessage() {
+        String response = new Ui().getGreeting();
 
-        assertTrue(output.contains("Hello! I'm Verity."));
-        assertTrue(output.contains("What can I do for you?"));
+        assertTrue(response.contains("Hello! I'm Verity."));
+        assertTrue(response.contains("What can I do for you?"));
     }
 
     @Test
-    void showExit_printsGoodbyeMessage() {
-        String output = captureOutput(() -> new Ui().showExit());
+    void getExitMessage_returnsGoodbyeMessage() {
+        String response = new Ui().getExitMessage();
 
-        assertTrue(output.contains("Bye. Hope to see you again soon!"));
+        assertTrue(response.contains("Bye. Hope to see you again soon!"));
     }
 
     @Test
-    void showTaskAdded_printsTaskAndCount() {
-        String output = captureOutput(
-                () -> new Ui().showTaskAdded(new Todo("read book"), 1));
+    void getTaskAddedMessage_returnsTaskAndCount() {
+        String response = new Ui().getTaskAddedMessage(
+                new Todo("read book"), 1);
 
-        assertTrue(output.contains("[T][ ] read book"));
-        assertTrue(output.contains("Now you have 1 tasks"));
+        assertTrue(response.contains("[T][ ] read book"));
+        assertTrue(response.contains("Now you have 1 tasks"));
     }
 
     @Test
-    void showTaskMarked_printsCompletedTask() {
+    void getTaskMarkedMessage_returnsCompletedTask() {
         Todo todo = new Todo("read book");
         todo.markAsDone();
 
-        String output = captureOutput(
-                () -> new Ui().showTaskMarked(todo));
+        String response = new Ui().getTaskMarkedMessage(todo);
 
-        assertTrue(output.contains("marked this task as done"));
-        assertTrue(output.contains("[T][X] read book"));
+        assertEquals(
+                HORIZONTAL_LINE + "\n"
+                        + "Nice! I've marked this task as done:\n\n"
+                        + "[T][X] read book\n"
+                        + HORIZONTAL_LINE,
+                response);
     }
 
     @Test
-    void showTaskUnmarked_printsIncompleteTask() {
+    void getTaskUnmarkedMessage_returnsIncompleteTask() {
         Todo todo = new Todo("read book");
 
-        String output = captureOutput(
-                () -> new Ui().showTaskUnmarked(todo));
+        String response = new Ui().getTaskUnmarkedMessage(todo);
 
-        assertTrue(output.contains("marked this task as not done yet"));
-        assertTrue(output.contains("[T][ ] read book"));
+        assertEquals(
+                HORIZONTAL_LINE + "\n"
+                        + "Ok, I've marked this task as not done yet:\n\n"
+                        + "[T][ ] read book\n"
+                        + HORIZONTAL_LINE,
+                response);
     }
 
     @Test
-    void showTaskDeleted_printsTaskAndRemainingCount() {
-        String output = captureOutput(
-                () -> new Ui().showTaskDeleted(new Todo("read book"), 0));
+    void getTaskDeletedMessage_returnsTaskAndRemainingCount() {
+        String response = new Ui().getTaskDeletedMessage(
+                new Todo("read book"), 0);
 
-        assertTrue(output.contains("removed this task"));
-        assertTrue(output.contains("Now you have 0 tasks"));
+        assertEquals(
+                HORIZONTAL_LINE + "\n"
+                        + "Noted. I've removed this task:\n\n"
+                        + "[T][ ] read book\n"
+                        + HORIZONTAL_LINE + "\n"
+                        + "Now you have 0 tasks in the list.\n\n"
+                        + HORIZONTAL_LINE,
+                response);
     }
 
     @Test
-    void showTaskList_printsNumberedTasks() {
+    void getTaskListMessage_returnsNumberedTasks() {
         TaskList tasks = new TaskList(List.of(
                 new Todo("read book"),
                 new Deadline("submit report", LocalDate.of(2026, 8, 10))
         ));
 
-        String output = captureOutput(
-                () -> new Ui().showTaskList(tasks));
+        String response = new Ui().getTaskListMessage(tasks);
 
-        assertTrue(output.contains("1.[T][ ] read book"));
-        assertTrue(output.contains("2.[D][ ] submit report"));
+        assertEquals(
+                HORIZONTAL_LINE + "\n"
+                        + "    Here are the tasks in your list:\n\n"
+                        + "    1.[T][ ] read book\n"
+                        + "    2.[D][ ] submit report "
+                        + "(by: Aug 10 2026)\n"
+                        + HORIZONTAL_LINE,
+                response);
     }
 
     @Test
-    void showTasksOn_matchingTasks_printsDateAndTasks() {
+    void getTasksOnMessage_matchingTasks_returnsDateAndTasks() {
         LocalDate date = LocalDate.of(2026, 8, 10);
-        String output = captureOutput(
-                () -> new Ui().showTasksOn(
-                        date,
-                        List.of(new Deadline("submit report", date))));
+        String response = new Ui().getTasksOnMessage(
+                date,
+                List.of(new Deadline("submit report", date)));
 
-        assertTrue(output.contains("Tasks on 2026-08-10:"));
-        assertTrue(output.contains("[D][ ] submit report"));
+        assertTrue(response.contains("Tasks on 2026-08-10:"));
+        assertTrue(response.contains("[D][ ] submit report"));
     }
 
     @Test
-    void showTasksOn_noMatchingTasks_printsEmptyMessage() {
-        String output = captureOutput(
-                () -> new Ui().showTasksOn(
-                        LocalDate.of(2026, 8, 10), List.of()));
+    void getTasksOnMessage_noMatchingTasks_returnsEmptyMessage() {
+        String response = new Ui().getTasksOnMessage(
+                LocalDate.of(2026, 8, 10), List.of());
 
-        assertTrue(output.contains("There are no tasks on this date."));
+        assertTrue(response.contains("There are no tasks on this date."));
     }
 
     @Test
-    void showMatchingTasks_matchingTasks_printsNumberedTasks() {
-        String output = captureOutput(
-                () -> new Ui().showMatchingTasks(List.of(
-                        new Todo("read book"),
-                        new Todo("return book"))));
+    void getMatchingTasksMessage_matchingTasks_returnsNumberedTasks() {
+        String response = new Ui().getMatchingTasksMessage(List.of(
+                new Todo("read book"),
+                new Todo("return book")));
 
-        assertTrue(output.contains(
+        assertTrue(response.contains(
                 "Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] read book"));
-        assertTrue(output.contains("2.[T][ ] return book"));
+        assertTrue(response.contains("1.[T][ ] read book"));
+        assertTrue(response.contains("2.[T][ ] return book"));
     }
 
     @Test
-    void showMatchingTasks_noMatchingTasks_printsEmptyMessage() {
-        String output = captureOutput(
-                () -> new Ui().showMatchingTasks(List.of()));
+    void getMatchingTasksMessage_noMatchingTasks_returnsEmptyMessage() {
+        String response = new Ui().getMatchingTasksMessage(List.of());
 
-        assertTrue(output.contains("There are no matching tasks."));
+        assertTrue(response.contains("There are no matching tasks."));
     }
 
     @Test
-    void showErrorMethods_printExpectedErrorMessages() {
-        String output = captureOutput(() -> {
-            Ui ui = new Ui();
-            ui.showCommandError("invalid command");
-            ui.showLoadingError();
-            ui.showCorruptedDataError("Line 1 is invalid.");
-            ui.showSavingError();
-        });
+    void errorMessageMethods_returnExpectedMessages() {
+        Ui ui = new Ui();
 
-        assertTrue(output.contains("Speak your truth. invalid command"));
-        assertTrue(output.contains("I could not load your saved tasks."));
-        assertTrue(output.contains("The saved task data is corrupted."));
-        assertTrue(output.contains("Line 1 is invalid."));
-        assertTrue(output.contains("I could not save your tasks."));
-    }
+        String commandError =
+                ui.getCommandErrorMessage("invalid command");
+        String loadingError = ui.getLoadingErrorMessage();
+        String corruptedDataError =
+                ui.getCorruptedDataErrorMessage("Line 1 is invalid.");
+        String savingError = ui.getSavingErrorMessage();
 
-    private static String captureOutput(Runnable action) {
-        PrintStream originalOutput = System.out;
-        ByteArrayOutputStream capturedOutput = new ByteArrayOutputStream();
-        try (PrintStream replacementOutput = new PrintStream(
-                capturedOutput, true, StandardCharsets.UTF_8)) {
-            System.setOut(replacementOutput);
-            action.run();
-        } finally {
-            System.setOut(originalOutput);
-        }
-        return capturedOutput.toString(StandardCharsets.UTF_8);
+        assertTrue(commandError.contains(
+                "Speak your truth. invalid command"));
+        assertTrue(loadingError.contains(
+                "I could not load your saved tasks."));
+        assertTrue(corruptedDataError.contains(
+                "The saved task data is corrupted."));
+        assertTrue(corruptedDataError.contains("Line 1 is invalid."));
+        assertTrue(savingError.contains(
+                "I could not save your tasks."));
     }
 }

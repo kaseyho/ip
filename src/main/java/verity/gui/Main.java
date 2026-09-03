@@ -1,5 +1,6 @@
 package verity.gui;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 import javafx.application.Application;
@@ -13,6 +14,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import verity.Verity;
+
 /**
  * Starts Verity's JavaFX graphical user interface.
  */
@@ -25,6 +28,8 @@ public class Main extends Application {
             getClass().getResourceAsStream(
                     "/images/verity_bot.png"),
             "Missing Verity avatar resource."));
+    private final Verity verity =
+            new Verity(Path.of("data", "verity.txt"));
 
     private ScrollPane scrollPane;
     private VBox dialogContainer;
@@ -39,10 +44,6 @@ public class Main extends Application {
 
         userInput = new TextField();
         sendButton = new Button("Send");
-
-        DialogBox sampleDialog =
-                new DialogBox("Hello!", userImage);
-        dialogContainer.getChildren().add(sampleDialog);
 
         AnchorPane mainLayout = new AnchorPane();
         mainLayout.getChildren().addAll(
@@ -78,6 +79,27 @@ public class Main extends Application {
         AnchorPane.setLeftAnchor(userInput, 1.0);
         AnchorPane.setBottomAnchor(userInput, 1.0);
 
+        sendButton.setOnMouseClicked(
+                event -> handleUserInput());
+        userInput.setOnAction(
+                event -> handleUserInput());
+        dialogContainer.heightProperty().addListener(
+                observable -> scrollPane.setVvalue(1.0));
+
         stage.show();
+    }
+
+    /**
+     * Displays the user's input and Verity's response.
+     */
+    private void handleUserInput() {
+        String input = userInput.getText();
+        String response = verity.getResponse(input);
+
+        dialogContainer.getChildren().addAll(
+                DialogBox.getUserDialog(input, userImage),
+                DialogBox.getVerityDialog(response, verityImage)
+        );
+        userInput.clear();
     }
 }
