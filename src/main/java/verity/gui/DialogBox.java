@@ -63,8 +63,22 @@ public class DialogBox extends HBox {
      */
     public static DialogBox getVerityDialog(
             String text, Image image) {
+        return getVerityDialog(text, image, null);
+    }
+
+    /**
+     * Returns a flipped dialog box styled for the command that produced it.
+     *
+     * @param text Verity's response.
+     * @param image Verity's avatar.
+     * @param commandType Command that produced the response.
+     * @return Verity dialog box.
+     */
+    public static DialogBox getVerityDialog(
+            String text, Image image, String commandType) {
         DialogBox dialogBox = new DialogBox(text, image);
         dialogBox.flip();
+        dialogBox.changeDialogStyle(commandType);
         return dialogBox;
     }
 
@@ -77,5 +91,32 @@ public class DialogBox extends HBox {
                 FXCollections.observableArrayList(getChildren());
         FXCollections.reverse(children);
         getChildren().setAll(children);
+        dialog.getStyleClass().add("reply-label");
+    }
+
+    /**
+     * Applies a response color based on the command that produced it.
+     *
+     * @param commandType Command type used to select the response style.
+     */
+    private void changeDialogStyle(String commandType) {
+        if (commandType == null) {
+            return;
+        }
+
+        switch (commandType) {
+        case "AddCommand":
+            dialog.getStyleClass().add("add-label");
+            break;
+        case "MarkCommand":
+            dialog.getStyleClass().add("marked-label");
+            break;
+        case "DeleteCommand":
+            dialog.getStyleClass().add("delete-label");
+            break;
+        default:
+            // Do nothing for commands without a dedicated response style.
+            break;
+        }
     }
 }

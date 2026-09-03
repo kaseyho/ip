@@ -22,6 +22,7 @@ public class Verity {
     private TaskList tasks;
     private boolean isInitialized;
     private String initializationErrorMessage;
+    private String commandType;
 
     /**
      * Creates a chatbot that stores its tasks at the specified path.
@@ -35,6 +36,7 @@ public class Verity {
         this.tasks = new TaskList();
         this.isInitialized = false;
         this.initializationErrorMessage = null;
+        this.commandType = null;
     }
 
     /**
@@ -76,6 +78,7 @@ public class Verity {
      * @return Verity's response.
      */
     public String getResponse(String input) {
+        commandType = null;
         if (!initialize()) {
             return initializationErrorMessage;
         }
@@ -91,11 +94,22 @@ public class Verity {
                 .map(task -> task.serialize())
                 .toList();
         try {
-            return command.execute(tasks, ui, storage);
+            String response = command.execute(tasks, ui, storage);
+            commandType = command.getClass().getSimpleName();
+            return response;
         } catch (IOException exception) {
             restoreTasks(taskSnapshot);
             return ui.getSavingErrorMessage();
         }
+    }
+
+    /**
+     * Returns the type of the most recently processed command.
+     *
+     * @return Most recent command type, or null if no command was processed.
+     */
+    public String getCommandType() {
+        return commandType;
     }
 
     /**

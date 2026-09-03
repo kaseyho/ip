@@ -32,6 +32,8 @@ public class Main extends Application {
             stage.setScene(new Scene(mainLayout));
             stage.setTitle("Verity");
             stage.setResizable(false);
+            stage.setMinHeight(220.0);
+            stage.setMinWidth(417.0);
             stage.show();
         } catch (IOException | RuntimeException exception) {
             throw new IllegalStateException(

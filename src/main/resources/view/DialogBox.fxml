@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
@@ -12,6 +13,9 @@
          type="javafx.scene.layout.HBox"
          xmlns="http://javafx.com/javafx/17"
          xmlns:fx="http://javafx.com/fxml/1">
+    <stylesheets>
+      <URL value="@../css/dialog-box.css" />
+    </stylesheets>
     <children>
         <Label fx:id="dialog"
                text="Label"

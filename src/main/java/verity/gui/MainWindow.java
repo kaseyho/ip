@@ -59,10 +59,12 @@ public class MainWindow extends AnchorPane {
     private void handleUserInput() {
         String input = userInput.getText();
         String response = verity.getResponse(input);
+        String commandType = verity.getCommandType();
 
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
-                DialogBox.getVerityDialog(response, verityImage));
+                DialogBox.getVerityDialog(
+                        response, verityImage, commandType));
         userInput.clear();
     }
 
