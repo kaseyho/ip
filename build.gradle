@@ -39,6 +39,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
 }
 test {
+    enableAssertions = true
     useJUnitPlatform()
 
     testLogging {
@@ -82,4 +83,5 @@ shadowJar {
 
 run {
     standardInput = System.in
+    enableAssertions = true
 }
