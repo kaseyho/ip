@@ -17,6 +17,11 @@ public class TaskList {
      * @param initialTasks Tasks to place in the task list.
      */
     public TaskList(Task... initialTasks) {
+        assert initialTasks != null : "Initial task array must not be null.";
+        assert Arrays.stream(initialTasks)
+                .allMatch(task -> task != null)
+                : "Task list must not contain null tasks.";
+
         this.tasks = new ArrayList<>(Arrays.asList(initialTasks));
     }
 
@@ -26,6 +31,8 @@ public class TaskList {
      * @param task Task to add.
      */
     public void add(Task task) {
+        assert task != null : "Added task must not be null.";
+
         tasks.add(task);
     }
 
@@ -36,6 +43,9 @@ public class TaskList {
      * @return Deleted task.
      */
     public Task delete(int taskIndex) {
+        assert taskIndex >= 0 && taskIndex < tasks.size()
+                : "Task index must refer to an existing task.";
+
         return tasks.remove(taskIndex);
     }
 
@@ -46,6 +56,9 @@ public class TaskList {
      * @return Task at the specified index.
      */
     public Task get(int taskIndex) {
+        assert taskIndex >= 0 && taskIndex < tasks.size()
+                : "Task index must refer to an existing task.";
+
         return tasks.get(taskIndex);
     }
 
@@ -56,6 +69,9 @@ public class TaskList {
      * @return Updated task.
      */
     public Task mark(int taskIndex) {
+        assert taskIndex >= 0 && taskIndex < tasks.size()
+                : "Task index must refer to an existing task.";
+
         Task task = tasks.get(taskIndex);
         task.markAsDone();
         return task;
@@ -68,6 +84,9 @@ public class TaskList {
      * @return Updated task.
      */
     public Task unmark(int taskIndex) {
+        assert taskIndex >= 0 && taskIndex < tasks.size()
+                : "Task index must refer to an existing task.";
+
         Task task = tasks.get(taskIndex);
         task.markAsUndone();
         return task;

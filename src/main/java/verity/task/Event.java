@@ -22,6 +22,11 @@ public class Event extends Task {
      * @param toDate Last date of the event.
      */
     public Event(String description, LocalDate fromDate, LocalDate toDate) {
+        assert fromDate != null : "Event start date must not be null.";
+        assert toDate != null : "Event end date must not be null.";
+        assert !toDate.isBefore(fromDate)
+                : "Event end date must not be before its start date.";
+
         super(description);
         this.fromDate = fromDate;
         this.toDate = toDate;
