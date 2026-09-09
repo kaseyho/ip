@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import verity.command.Command;
+import verity.command.CommandContext;
 import verity.exception.VerityException;
 import verity.parser.Parser;
 import verity.storage.Storage;
@@ -43,13 +44,17 @@ public class Verity {
             return;
         }
 
+        CommandContext commandContext =
+                new CommandContext(tasks, ui, storage);
+
         boolean isExit = false;
         while (!isExit) {
             try {
                 String fullCommand = ui.readCommand();
                 Command command =
                         parser.parse(fullCommand, tasks.size());
-                command.execute(tasks, ui, storage);
+
+                command.execute(commandContext);
                 isExit = command.isExit();
             } catch (VerityException exception) {
                 ui.showCommandError(exception.getMessage());

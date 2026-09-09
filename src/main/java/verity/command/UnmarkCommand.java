@@ -32,11 +32,12 @@ public class UnmarkCommand extends Command {
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public void execute(
-            TaskList tasks, Ui ui, Storage storage)
+    public void execute(CommandContext context)
             throws IOException {
+        TaskList tasks = context.getTasks();
+
         Task unmarkedTask = tasks.unmark(taskIndex);
-        storage.saveTasks(tasks);
-        ui.showTaskUnmarked(unmarkedTask);
+        context.getStorage().saveTasks(tasks);
+        context.getUi().showTaskUnmarked(unmarkedTask);
     }
 }

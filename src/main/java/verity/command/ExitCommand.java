@@ -27,8 +27,7 @@ public class ExitCommand extends Command {
      * @param storage Storage, which is not used.
      */
     @Override
-    public void execute(
-            TaskList tasks, Ui ui, Storage storage) {
+    public void execute(CommandContext context) {
         // Exiting is handled through isExit().
     }
 }

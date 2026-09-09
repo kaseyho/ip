@@ -50,8 +50,10 @@ class CommandTest {
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
         Todo todo = new Todo("read book");
 
-        new AddCommand(todo).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(dataFile));
+
+        new AddCommand(todo).execute(context);
 
         assertEquals(1, tasks.size());
         assertEquals(todo, tasks.get(0));
@@ -66,8 +68,10 @@ class CommandTest {
         TaskList tasks = new TaskList(List.of(todo));
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
 
-        new DeleteCommand(0).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(dataFile));
+
+        new DeleteCommand(0).execute(context);
 
         assertEquals(0, tasks.size());
         assertEquals("", Files.readString(dataFile));
@@ -79,8 +83,10 @@ class CommandTest {
         TaskList tasks = new TaskList(List.of(todo));
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
 
-        new MarkCommand(0).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(dataFile));
+
+        new MarkCommand(0).execute(context);
 
         assertEquals("[T][X] read book", tasks.get(0).getStatus());
         assertEquals(
@@ -95,8 +101,10 @@ class CommandTest {
         TaskList tasks = new TaskList(List.of(todo));
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
 
-        new UnmarkCommand(0).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(dataFile));
+
+        new UnmarkCommand(0).execute(context);
 
         assertEquals("[T][ ] read book", tasks.get(0).getStatus());
         assertEquals(
@@ -109,9 +117,11 @@ class CommandTest {
         TaskList tasks = new TaskList(
                 List.of(new Todo("read book")));
 
+        CommandContext context = new CommandContext(
+                tasks, new Ui(), new Storage(temporaryDirectory));
+
         String output = captureOutput(
-                () -> new ListCommand().execute(
-                        tasks, new Ui(), new Storage(temporaryDirectory)));
+                () -> new ListCommand().execute(context));
 
         assertTrue(output.contains("1.[T][ ] read book"));
     }
@@ -124,9 +134,11 @@ class CommandTest {
                 new Deadline("submit report", date)
         ));
 
+        CommandContext context = new CommandContext(
+                tasks, new Ui(), new Storage(temporaryDirectory));
+
         String output = captureOutput(
-                () -> new FindCommand(date).execute(
-                        tasks, new Ui(), new Storage(temporaryDirectory)));
+                () -> new FindCommand(date).execute(context));
 
         assertTrue(output.contains("Tasks on 2026-08-10:"));
         assertTrue(output.contains("[D][ ] submit report"));
@@ -137,8 +149,10 @@ class CommandTest {
     void exitCommand_execute_doesNotChangeTasks() {
         TaskList tasks = new TaskList();
 
-        new ExitCommand().execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(temporaryDirectory));
+
+        new ExitCommand().execute(context);
 
         assertEquals(0, tasks.size());
     }

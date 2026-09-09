@@ -29,8 +29,7 @@ public abstract class Command {
      * @param storage Storage used to save changes.
      * @throws IOException If task changes cannot be saved.
      */
-    public abstract void execute(
-            TaskList tasks, Ui ui, Storage storage)
+    public abstract void execute(CommandContext context)
             throws IOException;
 
     /**

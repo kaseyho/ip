@@ -32,9 +32,10 @@ public class FindCommand extends Command {
      * @param storage Storage, which is not used.
      */
     @Override
-    public void execute(
-            TaskList tasks, Ui ui, Storage storage) {
-        List<Task> matchingTasks = tasks.findOn(date);
-        ui.showTasksOn(date, matchingTasks);
+    public void execute(CommandContext context) {
+        List<Task> matchingTasks =
+                context.getTasks().findOn(date);
+
+        context.getUi().showTasksOn(date, matchingTasks);
     }
 }
