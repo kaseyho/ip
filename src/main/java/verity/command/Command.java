@@ -18,12 +18,13 @@ public abstract class Command {
     }
 
     /**
-     * Executes the command.
+     * Executes the command and returns its user-facing response.
      *
      * @param context Command execution context.
+     * @return User-facing response after execution.
      * @throws IOException If task changes cannot be saved.
      */
-    public abstract void execute(CommandContext context)
+    public abstract String execute(CommandContext context)
             throws IOException;
 
     /**

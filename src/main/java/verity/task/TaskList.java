@@ -2,6 +2,7 @@ package verity.task;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -11,19 +12,12 @@ public class TaskList {
     private final ArrayList<Task> tasks;
 
     /**
-     * Creates an empty task list.
-     */
-    public TaskList() {
-        this.tasks = new ArrayList<>();
-    }
-
-    /**
      * Creates a task list containing the supplied tasks.
      *
      * @param initialTasks Tasks to place in the task list.
      */
-    public TaskList(List<Task> initialTasks) {
-        this.tasks = new ArrayList<>(initialTasks);
+    public TaskList(Task... initialTasks) {
+        this.tasks = new ArrayList<>(Arrays.asList(initialTasks));
     }
 
     /**
@@ -94,6 +88,23 @@ public class TaskList {
             }
         }
 
+        return matchingTasks;
+    }
+
+    /**
+     * Returns tasks whose descriptions contain the keyword.
+     *
+     * @param keyword Keyword to search for.
+     * @return Matching tasks in their original order.
+     */
+    public List<Task> findByKeyword(String keyword) {
+        List<Task> matchingTasks = new ArrayList<>();
+
+        for (Task task : tasks) {
+            if (task.matchesKeyword(keyword)) {
+                matchingTasks.add(task);
+            }
+        }
         return matchingTasks;
     }
 

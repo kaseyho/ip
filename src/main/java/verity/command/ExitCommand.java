@@ -13,11 +13,13 @@ public class ExitCommand extends Command {
     }
 
     /**
-     * Performs no action because exit handling occurs in the command loop.
+     * Returns Verity's exit message.
      *
-     * @param context Command execution context, which is not used.
+     * @param context Command execution context.
+     * @return Exit message.
      */
     @Override
-    public void execute(CommandContext context) {
+    public String execute(CommandContext context) {
+        return context.getUi().getExitMessage();
     }
 }

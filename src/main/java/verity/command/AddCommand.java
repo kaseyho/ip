@@ -22,18 +22,20 @@ public class AddCommand extends Command {
     }
 
     /**
-     * Adds the task, saves the updated task list, and displays feedback.
+     * Adds the task, saves the updated task list, and returns feedback.
      *
      * @param context Command execution context.
+     * @return User-facing response after execution.
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public void execute(CommandContext context)
+    public String execute(CommandContext context)
             throws IOException {
         TaskList tasks = context.getTasks();
 
         tasks.add(task);
         context.getStorage().saveTasks(tasks);
-        context.getUi().showTaskAdded(task, tasks.size());
+        return context.getUi()
+                .getTaskAddedMessage(task, tasks.size());
     }
 }

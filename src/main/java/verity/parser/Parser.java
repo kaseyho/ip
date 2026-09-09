@@ -9,6 +9,7 @@ import verity.command.Command;
 import verity.command.DeleteCommand;
 import verity.command.ExitCommand;
 import verity.command.FindCommand;
+import verity.command.FindDateCommand;
 import verity.command.ListCommand;
 import verity.command.MarkCommand;
 import verity.command.UnmarkCommand;
@@ -35,6 +36,7 @@ public class Parser {
     private static final String COMMAND_DEADLINE = "deadline";
     private static final String COMMAND_EVENT = "event";
     private static final String COMMAND_FIND = "find";
+    private static final String COMMAND_FIND_DATE = "finddate";
 
     private final SavedTaskParser savedTaskParser =
             new SavedTaskParser();
@@ -75,6 +77,8 @@ public class Parser {
             case COMMAND_EVENT -> new AddCommand(
                     parseEvent(commandParts));
             case COMMAND_FIND -> new FindCommand(
+                    parseFindKeyword(commandParts));
+            case COMMAND_FIND_DATE -> new FindDateCommand(
                     parseFindDate(commandParts));
             default -> throw new VerityException(
                     "I don't know that command.");
@@ -113,7 +117,8 @@ public class Parser {
         }
 
         if (commandParts.length > 2) {
-            throw new VerityException("A task command accepts exactly one task number.");
+            throw new VerityException(
+                    "A task command accepts exactly one task number.");
         }
 
         int taskIndex;
@@ -277,7 +282,23 @@ public class Parser {
     }
 
     /**
-     * Parses the date supplied to a find command.
+     * Parses the keyword supplied to a find command.
+     *
+     * @param commandParts Parts of the user's command.
+     * @return Keyword to search for.
+     * @throws VerityException If the keyword is missing.
+     */
+    private String parseFindKeyword(String[] commandParts)
+            throws VerityException {
+        if (commandParts.length < 2) {
+            throw new VerityException(
+                    "Please provide a keyword to search for.");
+        }
+        return joinWords(commandParts, 1, commandParts.length);
+    }
+
+    /**
+     * Parses the date supplied to a finddate command.
      *
      * @param commandParts Parts of the user command.
      * @return Date to search for.
@@ -287,7 +308,7 @@ public class Parser {
             throws VerityException {
         if (commandParts.length != 2) {
             throw new VerityException(
-                    "Use find followed by a date in yyyy-MM-dd format.");
+                    "Use finddate followed by a date in yyyy-MM-dd format.");
         }
 
         return TaskFactory.parseDate(commandParts[1]);

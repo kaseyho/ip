@@ -56,14 +56,14 @@ class StorageTest {
                 .resolve("nested")
                 .resolve("data")
                 .resolve("tasks.txt");
-        TaskList tasks = new TaskList(List.of(
+        TaskList tasks = new TaskList(
                 new Todo("read book"),
                 new Deadline("submit report", LocalDate.of(2026, 8, 10)),
                 new Event(
                         "project meeting",
                         LocalDate.of(2026, 8, 10),
                         LocalDate.of(2026, 8, 12))
-        ));
+        );
         Storage storage = new Storage(dataFile);
 
         storage.saveTasks(tasks);

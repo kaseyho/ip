@@ -34,12 +34,23 @@ public class Deadline extends Task {
                 + " (by: " + dueDate.format(DISPLAY_DATE_FORMAT) + ")";
     }
 
+    /**
+     * Returns a line representing this deadline in the data file.
+     *
+     * @return Tab-separated deadline data.
+     */
     @Override
     public String serialize() {
         return String.join("\t", "D", getStorageStatus(), getDescription(),
                 dueDate.toString());
     }
 
+    /**
+     * Returns whether this deadline is due on the specified date.
+     *
+     * @param date Date to check.
+     * @return True if the deadline is due on the date.
+     */
     @Override
     public boolean occursOn(LocalDate date) {
         return dueDate.equals(date);

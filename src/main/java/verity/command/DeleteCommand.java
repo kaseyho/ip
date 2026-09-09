@@ -25,15 +25,17 @@ public class DeleteCommand extends Command {
      * Deletes the task and saves the updated task list.
      *
      * @param context Command execution context.
+     * @return User-facing response after execution.
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public void execute(CommandContext context)
+    public String execute(CommandContext context)
             throws IOException {
         TaskList tasks = context.getTasks();
 
         Task deletedTask = tasks.delete(taskIndex);
         context.getStorage().saveTasks(tasks);
-        context.getUi().showTaskDeleted(deletedTask, tasks.size());
+        return context.getUi()
+                .getTaskDeletedMessage(deletedTask, tasks.size());
     }
 }

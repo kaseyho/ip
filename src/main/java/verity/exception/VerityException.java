@@ -1,14 +1,14 @@
 package verity.exception;
 
 /**
- * Represents an error caused by invalid user input or corrupted task data.
+ * Represents an error caused by invalid user input or corrupted saved data.
  */
 public class VerityException extends Exception {
 
     /**
-     * Creates an exception with the specified user-facing message.
+     * Creates a Verity exception with the specified message.
      *
-     * @param message Description of the error.
+     * @param message Explanation of the error.
      */
     public VerityException(String message) {
         super(message);

@@ -1,6 +1,5 @@
 package verity.command;
 
-
 /**
  * Represents a command that displays all tasks.
  */
@@ -14,12 +13,13 @@ public class ListCommand extends Command {
     }
 
     /**
-     * Displays all tasks.
+     * Returns all tasks.
      *
      * @param context Command execution context.
+     * @return User-facing response after execution.
      */
     @Override
-    public void execute(CommandContext context) {
-        context.getUi().showTaskList(context.getTasks());
+    public String execute(CommandContext context) {
+        return context.getUi().getTaskListMessage(context.getTasks());
     }
 }

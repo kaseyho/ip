@@ -15,7 +15,7 @@ public class Event extends Task {
     private final LocalDate toDate;
 
     /**
-     * Creates an incomplete event with the specified description and date range.
+     * Creates an incomplete event task over the specified inclusive date range.
      *
      * @param description Description of the event.
      * @param fromDate First date of the event.
@@ -34,6 +34,11 @@ public class Event extends Task {
         this.toDate = toDate;
     }
 
+    /**
+     * Returns a user-facing summary of this event, including its date range.
+     *
+     * @return Formatted event summary.
+     */
     @Override
     public String getStatus() {
         return "[E]" + super.getStatus()
@@ -41,6 +46,11 @@ public class Event extends Task {
                 + " to: " + toDate.format(DISPLAY_DATE_FORMAT) + ")";
     }
 
+    /**
+     * Returns a line representing this event in the data file.
+     *
+     * @return Tab-separated event data.
+     */
     @Override
     public String serialize() {
         return String.join(
@@ -52,6 +62,12 @@ public class Event extends Task {
                 toDate.toString());
     }
 
+    /**
+     * Returns whether this event occurs on the specified date.
+     *
+     * @param date Date to check.
+     * @return True if the date falls within the event's inclusive date range.
+     */
     @Override
     public boolean occursOn(LocalDate date) {
         return !date.isBefore(fromDate) && !date.isAfter(toDate);

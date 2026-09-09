@@ -25,15 +25,16 @@ public class MarkCommand extends Command {
      * Marks the task and saves the updated task list.
      *
      * @param context Command execution context.
+     * @return User-facing response after execution.
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public void execute(CommandContext context)
+    public String execute(CommandContext context)
             throws IOException {
         TaskList tasks = context.getTasks();
 
         Task markedTask = tasks.mark(taskIndex);
         context.getStorage().saveTasks(tasks);
-        context.getUi().showTaskMarked(markedTask);
+        return context.getUi().getTaskMarkedMessage(markedTask);
     }
 }

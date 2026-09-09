@@ -25,15 +25,16 @@ public class UnmarkCommand extends Command {
      * Unmarks the task and saves the updated task list.
      *
      * @param context Command execution context.
+     * @return User-facing response after execution.
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public void execute(CommandContext context)
+    public String execute(CommandContext context)
             throws IOException {
         TaskList tasks = context.getTasks();
 
         Task unmarkedTask = tasks.unmark(taskIndex);
         context.getStorage().saveTasks(tasks);
-        context.getUi().showTaskUnmarked(unmarkedTask);
+        return context.getUi().getTaskUnmarkedMessage(unmarkedTask);
     }
 }

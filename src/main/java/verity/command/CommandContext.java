@@ -16,7 +16,7 @@ public class CommandContext {
      * Creates a command execution context.
      *
      * @param tasks Task list on which commands operate.
-     * @param ui UI used to display command results.
+     * @param ui UI used to format command results.
      * @param storage Storage used to save task changes.
      */
     public CommandContext(
