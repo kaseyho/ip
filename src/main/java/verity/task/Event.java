@@ -20,6 +20,7 @@ public class Event extends Task {
      * @param description Description of the event.
      * @param fromDate First date of the event.
      * @param toDate Last date of the event.
+     * @throws IllegalArgumentException If the end date is before the start date.
      */
     public Event(String description, LocalDate fromDate, LocalDate toDate) {
         super(description);
