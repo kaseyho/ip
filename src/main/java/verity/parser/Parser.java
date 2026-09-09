@@ -26,6 +26,15 @@ public class Parser {
     private static final String DEADLINE_DATE_MARKER = "/by";
     private static final String EVENT_START_DATE_MARKER = "/from";
     private static final String EVENT_END_DATE_MARKER = "/to";
+    private static final String COMMAND_BYE = "bye";
+    private static final String COMMAND_LIST = "list";
+    private static final String COMMAND_MARK = "mark";
+    private static final String COMMAND_UNMARK = "unmark";
+    private static final String COMMAND_DELETE = "delete";
+    private static final String COMMAND_TODO = "todo";
+    private static final String COMMAND_DEADLINE = "deadline";
+    private static final String COMMAND_EVENT = "event";
+    private static final String COMMAND_FIND = "find";
 
     private final SavedTaskParser savedTaskParser =
             new SavedTaskParser();
@@ -45,25 +54,48 @@ public class Parser {
                 commandParts[0].toLowerCase(Locale.ROOT);
 
         return switch (commandWord) {
-            case "bye" -> new ExitCommand();
-            case "list" -> new ListCommand();
-            case "mark" -> new MarkCommand(
+            case COMMAND_BYE -> {
+                requireNoArguments(commandParts, COMMAND_BYE);
+                yield new ExitCommand();
+            }
+            case COMMAND_LIST -> {
+                requireNoArguments(commandParts, COMMAND_LIST);
+                yield new ListCommand();
+            }
+            case COMMAND_MARK -> new MarkCommand(
                     parseTaskNumber(commandParts, taskCount));
-            case "unmark" -> new UnmarkCommand(
+            case COMMAND_UNMARK -> new UnmarkCommand(
                     parseTaskNumber(commandParts, taskCount));
-            case "delete" -> new DeleteCommand(
+            case COMMAND_DELETE -> new DeleteCommand(
                     parseTaskNumber(commandParts, taskCount));
-            case "todo" -> new AddCommand(
+            case COMMAND_TODO -> new AddCommand(
                     parseTodo(commandParts));
-            case "deadline" -> new AddCommand(
+            case COMMAND_DEADLINE -> new AddCommand(
                     parseDeadline(commandParts));
-            case "event" -> new AddCommand(
+            case COMMAND_EVENT -> new AddCommand(
                     parseEvent(commandParts));
-            case "find" -> new FindCommand(
+            case COMMAND_FIND -> new FindCommand(
                     parseFindDate(commandParts));
             default -> throw new VerityException(
                     "I don't know that command.");
         };
+    }
+
+    /**
+     * Ensures that a command has no arguments.
+     *
+     * @param commandParts Parts of the command.
+     * @param commandName Name of the command.
+     * @throws VerityException If an argument was supplied.
+     */
+    private void requireNoArguments(
+            String[] commandParts, String commandName)
+            throws VerityException {
+        if (commandParts.length != 1) {
+            throw new VerityException(
+                    "The " + commandName
+                            + " command does not accept arguments.");
+        }
     }
 
     /**
@@ -78,6 +110,10 @@ public class Parser {
             throws VerityException {
         if (commandParts.length < 2) {
             throw new VerityException("Please provide a task number.");
+        }
+
+        if (commandParts.length > 2) {
+            throw new VerityException("A task command accepts exactly 1 task number.");
         }
 
         int taskIndex;

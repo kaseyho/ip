@@ -263,4 +263,37 @@ class ParserTest {
                 "Line 1: task fields cannot be empty.",
                 exception.getMessage());
     }
+
+    @Test
+    void parse_byeWithArgument_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("bye now", 0));
+
+        assertEquals(
+                "The bye command does not accept arguments.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_listWithArgument_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("list all", 0));
+
+        assertEquals(
+                "The list command does not accept arguments.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_taskNumberWithExtraArgument_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("mark 1 extra", 1));
+
+        assertEquals(
+                "A task command accepts exactly one task number.",
+                exception.getMessage());
+    }
 }
