@@ -2,10 +2,8 @@ package verity.command;
 
 import java.io.IOException;
 
-import verity.storage.Storage;
 import verity.task.Task;
 import verity.task.TaskList;
-import verity.ui.Ui;
 
 /**
  * Represents a command that adds a task.
@@ -26,18 +24,18 @@ public class AddCommand extends Command {
     /**
      * Adds the task, saves the updated task list, and returns feedback.
      *
-     * @param tasks Task list to update.
-     * @param ui UI used to format feedback.
-     * @param storage Storage used to save the task list.
+     * @param context Command execution context.
      * @return User-facing response after execution.
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public String execute(
-            TaskList tasks, Ui ui, Storage storage)
+    public String execute(CommandContext context)
             throws IOException {
+        TaskList tasks = context.getTasks();
+
         tasks.add(task);
-        storage.saveTasks(tasks);
-        return ui.getTaskAddedMessage(task, tasks.size());
+        context.getStorage().saveTasks(tasks);
+        return context.getUi()
+                .getTaskAddedMessage(task, tasks.size());
     }
 }

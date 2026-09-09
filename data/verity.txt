@@ -1,2 +1,3 @@
 D	1	submit report	2026-10-10
 E	0	workshop	2026-10-10	2026-10-12
+T	0	escape from 2100 lecture
