@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Stores and manages the user's tasks.
@@ -80,15 +81,9 @@ public class TaskList {
      * @return Tasks occurring on the date.
      */
     public List<Task> findOn(LocalDate date) {
-        List<Task> matchingTasks = new ArrayList<>();
-
-        for (Task task : tasks) {
-            if (task.occursOn(date)) {
-                matchingTasks.add(task);
-            }
-        }
-
-        return matchingTasks;
+        return tasks.stream()
+                .filter(task -> task.occursOn(date))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -98,14 +93,9 @@ public class TaskList {
      * @return Matching tasks in their original order.
      */
     public List<Task> findByKeyword(String keyword) {
-        List<Task> matchingTasks = new ArrayList<>();
-
-        for (Task task : tasks) {
-            if (task.matchesKeyword(keyword)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
+        return tasks.stream()
+                .filter(task -> task.matchesKeyword(keyword))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**

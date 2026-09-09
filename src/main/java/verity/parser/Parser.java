@@ -3,8 +3,10 @@ package verity.parser;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import verity.command.AddCommand;
 import verity.command.Command;
@@ -349,11 +351,10 @@ public class Parser {
                     "unknown task type '" + taskType + "'.");
         }
 
-        for (int i = 2; i < fields.length; i++) {
-            if (fields[i].isBlank()) {
-                throw new VerityException(
-                        "task fields cannot be empty.");
-            }
+        if (Arrays.stream(fields, 2, fields.length)
+                .anyMatch(String::isBlank)) {
+            throw new VerityException(
+                    "task fields cannot be empty.");
         }
 
         if (storedStatus.equals("1")) {
@@ -365,15 +366,7 @@ public class Parser {
 
     private String joinWords(String[] commandParts, int startIndex,
             int endIndex) {
-        StringBuilder result = new StringBuilder();
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (i > startIndex) {
-                result.append(" ");
-            }
-            result.append(commandParts[i]);
-        }
-
-        return result.toString();
+        return Arrays.stream(commandParts, startIndex, endIndex)
+                .collect(Collectors.joining(" "));
     }
 }
