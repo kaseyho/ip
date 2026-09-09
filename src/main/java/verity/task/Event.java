@@ -36,7 +36,7 @@ public class Event extends Task {
 
     @Override
     public String serialize() {
-        return String.join("\t", "E", getStorageStatus(), description,
+        return String.join("\t", "E", getStorageStatus(), getDescription(),
                 fromDate.toString(), toDate.toString());
     }
 
