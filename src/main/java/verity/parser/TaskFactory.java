@@ -42,11 +42,10 @@ final class TaskFactory {
     static Event createEvent(
             String description, LocalDate fromDate, LocalDate toDate)
             throws VerityException {
-        if (toDate.isBefore(fromDate)) {
-            throw new VerityException(
-                    "The event end date cannot be before the start date.");
+        try {
+            return new Event(description, fromDate, toDate);
+        } catch (IllegalArgumentException exception) {
+            throw new VerityException(exception.getMessage());
         }
-
-        return new Event(description, fromDate, toDate);
     }
 }
