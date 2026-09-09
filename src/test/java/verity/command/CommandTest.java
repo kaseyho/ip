@@ -43,71 +43,84 @@ class CommandTest {
     }
 
     @Test
-    void addCommand_execute_addsTaskAndSavesIt() throws IOException {
+    void addCommand_execute_addsTaskSavesItAndReturnsResponse()
+            throws IOException {
         TaskList tasks = new TaskList();
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
         Todo todo = new Todo("read book");
-
-        new AddCommand(todo).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(dataFile));
+
+        String response = new AddCommand(todo).execute(context);
 
         assertEquals(1, tasks.size());
         assertEquals(todo, tasks.get(0));
         assertEquals(
                 "T\t0\tread book" + System.lineSeparator(),
                 Files.readString(dataFile));
+        assertTrue(response.contains("I've added this task"));
     }
 
     @Test
-    void deleteCommand_execute_removesTaskAndSavesIt() throws IOException {
+    void deleteCommand_execute_removesTaskSavesItAndReturnsResponse()
+            throws IOException {
         Todo todo = new Todo("read book");
         TaskList tasks = new TaskList(todo);
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
-
-        new DeleteCommand(0).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(dataFile));
+
+        String response = new DeleteCommand(0).execute(context);
 
         assertEquals(0, tasks.size());
         assertEquals("", Files.readString(dataFile));
+        assertTrue(response.contains("I've removed this task"));
     }
 
     @Test
-    void markCommand_execute_marksTaskAndSavesIt() throws IOException {
+    void markCommand_execute_marksTaskSavesItAndReturnsResponse()
+            throws IOException {
         Todo todo = new Todo("read book");
         TaskList tasks = new TaskList(todo);
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
-
-        new MarkCommand(0).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(dataFile));
+
+        String response = new MarkCommand(0).execute(context);
 
         assertEquals("[T][X] read book", tasks.get(0).getStatus());
         assertEquals(
                 "T\t1\tread book" + System.lineSeparator(),
                 Files.readString(dataFile));
+        assertTrue(response.contains("marked this task as done"));
     }
 
     @Test
-    void unmarkCommand_execute_unmarksTaskAndSavesIt() throws IOException {
+    void unmarkCommand_execute_unmarksTaskSavesItAndReturnsResponse()
+            throws IOException {
         Todo todo = new Todo("read book");
         todo.markAsDone();
         TaskList tasks = new TaskList(todo);
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
-
-        new UnmarkCommand(0).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(dataFile));
+
+        String response = new UnmarkCommand(0).execute(context);
 
         assertEquals("[T][ ] read book", tasks.get(0).getStatus());
         assertEquals(
                 "T\t0\tread book" + System.lineSeparator(),
                 Files.readString(dataFile));
+        assertTrue(response.contains("marked this task as not done yet"));
     }
 
     @Test
     void listCommand_execute_returnsAllTasks() {
         TaskList tasks = new TaskList(new Todo("read book"));
-
-        String response = new ListCommand().execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(temporaryDirectory));
+
+        String response = new ListCommand().execute(context);
 
         assertTrue(response.contains("1.[T][ ] read book"));
     }
@@ -119,9 +132,10 @@ class CommandTest {
                 new Todo("submit report"),
                 new Todo("return BOOK")
         );
-
-        String response = new FindCommand("book").execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(temporaryDirectory));
+
+        String response = new FindCommand("book").execute(context);
 
         assertTrue(response.contains("1.[T][ ] read book"));
         assertTrue(response.contains("2.[T][ ] return BOOK"));
@@ -135,9 +149,10 @@ class CommandTest {
                 new Todo("read book"),
                 new Deadline("submit report", date)
         );
-
-        String response = new FindDateCommand(date).execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(temporaryDirectory));
+
+        String response = new FindDateCommand(date).execute(context);
 
         assertTrue(response.contains("Tasks on 2026-08-10:"));
         assertTrue(response.contains("[D][ ] submit report"));
@@ -147,9 +162,10 @@ class CommandTest {
     @Test
     void exitCommand_execute_returnsExitMessageWithoutChangingTasks() {
         TaskList tasks = new TaskList();
-
-        String response = new ExitCommand().execute(
+        CommandContext context = new CommandContext(
                 tasks, new Ui(), new Storage(temporaryDirectory));
+
+        String response = new ExitCommand().execute(context);
 
         assertTrue(response.contains("Bye. Hope to see you again soon!"));
         assertEquals(0, tasks.size());

@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import verity.command.Command;
+import verity.command.CommandContext;
 import verity.exception.VerityException;
 import verity.parser.Parser;
 import verity.storage.Storage;
@@ -51,14 +52,16 @@ public class Verity {
             return;
         }
 
+        CommandContext commandContext =
+                new CommandContext(tasks, ui, storage);
+
         boolean isExit = false;
         while (!isExit) {
             try {
                 String fullCommand = ui.readCommand();
                 Command command =
                         parser.parse(fullCommand, tasks.size());
-                String response =
-                        command.execute(tasks, ui, storage);
+                String response = command.execute(commandContext);
 
                 System.out.println(response);
                 isExit = command.isExit();
@@ -94,8 +97,10 @@ public class Verity {
         List<String> taskSnapshot = tasks.getTasks().stream()
                 .map(task -> task.serialize())
                 .toList();
+        CommandContext commandContext =
+                new CommandContext(tasks, ui, storage);
         try {
-            String response = command.execute(tasks, ui, storage);
+            String response = command.execute(commandContext);
             commandType = command.getClass().getSimpleName();
             return response;
         } catch (IOException exception) {
@@ -123,6 +128,8 @@ public class Verity {
             tasks = new TaskList(
                     parser.parseSavedTasks(taskSnapshot)
                             .toArray(Task[]::new));
+            assert tasks.size() == taskSnapshot.size()
+                    : "Restored task count must match snapshot.";
         } catch (VerityException exception) {
             throw new IllegalStateException(
                     "Could not restore the task list.", exception);

@@ -20,9 +20,22 @@ public class Event extends Task {
      * @param description Description of the event.
      * @param fromDate First date of the event.
      * @param toDate Last date of the event.
+     * @throws IllegalArgumentException If the end date is before the start date.
      */
     public Event(String description, LocalDate fromDate, LocalDate toDate) {
+        assert fromDate != null : "Event start date must not be null.";
+        assert toDate != null : "Event end date must not be null.";
+
         super(description);
+
+        if (toDate.isBefore(fromDate)) {
+            throw new IllegalArgumentException(
+                    "The event end date cannot be before the start date.");
+        }
+
+        assert !toDate.isBefore(fromDate)
+                : "Event end date must not be before its start date.";
+
         this.fromDate = fromDate;
         this.toDate = toDate;
     }
@@ -46,8 +59,13 @@ public class Event extends Task {
      */
     @Override
     public String serialize() {
-        return String.join("\t", "E", getStorageStatus(), description,
-                fromDate.toString(), toDate.toString());
+        return String.join(
+                "\t",
+                "E",
+                getStorageStatus(),
+                getDescription(),
+                fromDate.toString(),
+                toDate.toString());
     }
 
     /**

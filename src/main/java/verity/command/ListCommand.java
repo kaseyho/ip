@@ -1,9 +1,5 @@
 package verity.command;
 
-import verity.storage.Storage;
-import verity.task.TaskList;
-import verity.ui.Ui;
-
 /**
  * Represents a command that displays all tasks.
  */
@@ -19,14 +15,11 @@ public class ListCommand extends Command {
     /**
      * Returns all tasks.
      *
-     * @param tasks Task list to display.
-     * @param ui UI used to format the task list.
-     * @param storage Storage, which is not used.
+     * @param context Command execution context.
      * @return User-facing response after execution.
      */
     @Override
-    public String execute(
-            TaskList tasks, Ui ui, Storage storage) {
-        return ui.getTaskListMessage(tasks);
+    public String execute(CommandContext context) {
+        return context.getUi().getTaskListMessage(context.getTasks());
     }
 }
