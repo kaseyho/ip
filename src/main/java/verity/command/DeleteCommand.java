@@ -2,10 +2,8 @@ package verity.command;
 
 import java.io.IOException;
 
-import verity.storage.Storage;
 import verity.task.Task;
 import verity.task.TaskList;
-import verity.ui.Ui;
 
 /**
  * Represents a command that deletes a task.
@@ -26,9 +24,7 @@ public class DeleteCommand extends Command {
     /**
      * Deletes the task and saves the updated task list.
      *
-     * @param tasks   Task list to update.
-     * @param ui      UI used to display feedback.
-     * @param storage Storage used to save the task list.
+     * @param context Command execution context.
      * @throws IOException If the task list cannot be saved.
      */
     @Override

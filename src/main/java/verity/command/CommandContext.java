@@ -37,5 +37,4 @@ public class CommandContext {
     public Storage getStorage() {
         return storage;
     }
-
 }

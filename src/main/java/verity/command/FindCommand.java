@@ -3,10 +3,7 @@ package verity.command;
 import java.time.LocalDate;
 import java.util.List;
 
-import verity.storage.Storage;
 import verity.task.Task;
-import verity.task.TaskList;
-import verity.ui.Ui;
 
 /**
  * Represents a command that finds tasks occurring on a date.
@@ -27,9 +24,7 @@ public class FindCommand extends Command {
     /**
      * Finds and displays tasks occurring on the date.
      *
-     * @param tasks Task list to search.
-     * @param ui UI used to display matching tasks.
-     * @param storage Storage, which is not used.
+     * @param context Command execution context.
      */
     @Override
     public void execute(CommandContext context) {
