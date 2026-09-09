@@ -85,6 +85,7 @@ class TaskListTest {
         List<Task> matchingTasks = taskList.findOn(MATCHING_DATE);
 
         assertEquals(List.of(deadline, event), matchingTasks);
+        assertEquals(List.of(todo, deadline, event), taskList.getTasks());
     }
 
     @Test
@@ -105,6 +106,9 @@ class TaskListTest {
         List<Task> matchingTasks = taskList.findByKeyword("BoOk");
 
         assertEquals(List.of(firstMatch, secondMatch), matchingTasks);
+        assertEquals(
+                List.of(firstMatch, nonMatch, secondMatch),
+                taskList.getTasks());
     }
 
     @Test

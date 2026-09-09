@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import verity.task.Task;
 import verity.task.TaskList;
@@ -46,13 +47,13 @@ public class Storage {
      * @throws IOException If the tasks cannot be saved.
      */
     public void saveTasks(TaskList taskList) throws IOException {
-        StringBuilder fileContents = new StringBuilder();
-        for (Task task : taskList.getTasks()) {
-            fileContents.append(task.serialize())
-                    .append(System.lineSeparator());
-        }
+        String fileContents = taskList.getTasks().stream()
+                .map(Task::serialize)
+                .map(serializedTask ->
+                        serializedTask + System.lineSeparator())
+                .collect(Collectors.joining());
 
-        writeToFile(fileContents.toString());
+        writeToFile(fileContents);
     }
 
     /**

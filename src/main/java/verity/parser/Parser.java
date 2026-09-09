@@ -1,6 +1,9 @@
 package verity.parser;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -347,5 +350,7 @@ public class Parser {
         }
 
         return result.toString();
+        return Arrays.stream(commandParts, startIndex, endIndex)
+                .collect(Collectors.joining(" "));
     }
 }
