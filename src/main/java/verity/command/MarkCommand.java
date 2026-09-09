@@ -32,11 +32,12 @@ public class MarkCommand extends Command {
      * @throws IOException If the task list cannot be saved.
      */
     @Override
-    public void execute(
-            TaskList tasks, Ui ui, Storage storage)
+    public void execute(CommandContext context)
             throws IOException {
+        TaskList tasks = context.getTasks();
+
         Task markedTask = tasks.mark(taskIndex);
-        storage.saveTasks(tasks);
-        ui.showTaskMarked(markedTask);
+        context.getStorage().saveTasks(tasks);
+        context.getUi().showTaskMarked(markedTask);
     }
 }

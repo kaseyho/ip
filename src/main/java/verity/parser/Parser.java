@@ -113,7 +113,7 @@ public class Parser {
         }
 
         if (commandParts.length > 2) {
-            throw new VerityException("A task command accepts exactly 1 task number.");
+            throw new VerityException("A task command accepts exactly one task number.");
         }
 
         int taskIndex;
