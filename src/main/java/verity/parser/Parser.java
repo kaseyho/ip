@@ -51,6 +51,9 @@ public class Parser {
      */
     public Command parse(String fullCommand, int taskCount)
             throws VerityException {
+        assert fullCommand != null : "Command text must not be null";
+        assert taskCount >= 0 : "Task count must not be negative.";
+
         String[] commandParts = fullCommand.trim().split("\\s+");
         String commandWord =
                 commandParts[0].toLowerCase(Locale.ROOT);
@@ -328,6 +331,12 @@ public class Parser {
 
     private String joinWords(String[] commandParts, int startIndex,
             int endIndex) {
+        assert commandParts != null : "Command parts must not be null.";
+        assert startIndex >= 0
+                && startIndex <= endIndex
+                && endIndex <= commandParts.length
+                : "Word range must be within command parts.";
+
         StringBuilder result = new StringBuilder();
 
         for (int i = startIndex; i < endIndex; i++) {

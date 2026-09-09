@@ -128,6 +128,8 @@ public class Verity {
             tasks = new TaskList(
                     parser.parseSavedTasks(taskSnapshot)
                             .toArray(Task[]::new));
+            assert tasks.size() == taskSnapshot.size()
+                    : "Restored task count must match snapshot.";
         } catch (VerityException exception) {
             throw new IllegalStateException(
                     "Could not restore the task list.", exception);

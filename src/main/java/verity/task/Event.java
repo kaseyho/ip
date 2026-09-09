@@ -23,12 +23,18 @@ public class Event extends Task {
      * @throws IllegalArgumentException If the end date is before the start date.
      */
     public Event(String description, LocalDate fromDate, LocalDate toDate) {
+        assert fromDate != null : "Event start date must not be null.";
+        assert toDate != null : "Event end date must not be null.";
+
         super(description);
 
         if (toDate.isBefore(fromDate)) {
             throw new IllegalArgumentException(
                     "The event end date cannot be before the start date.");
         }
+
+        assert !toDate.isBefore(fromDate)
+                : "Event end date must not be before its start date.";
 
         this.fromDate = fromDate;
         this.toDate = toDate;
