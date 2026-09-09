@@ -43,8 +43,8 @@ public class Deadline extends Task {
      */
     @Override
     public String serialize() {
-        return String.join("\t", "D", getStorageStatus(), getDescription(),
-                dueDate.toString());
+        return appendClientMetadata(String.join(
+                "\t", "D", getStorageStatus(), getDescription(), dueDate.toString()));
     }
 
     /**

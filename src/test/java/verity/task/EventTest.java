@@ -43,7 +43,7 @@ class EventTest {
     @Test
     void serialize_incompleteEvent_returnsStorageFormat() {
         assertEquals(
-                "E\t0\tproject meeting\t2026-08-10\t2026-08-12",
+                "E\t0\tproject meeting\t2026-08-10\t2026-08-12\t\t",
                 event.serialize()
         );
     }
@@ -53,7 +53,7 @@ class EventTest {
         event.markAsDone();
 
         assertEquals(
-                "E\t1\tproject meeting\t2026-08-10\t2026-08-12",
+                "E\t1\tproject meeting\t2026-08-10\t2026-08-12\t\t",
                 event.serialize()
         );
     }

@@ -48,7 +48,7 @@ class DeadlineTest {
         Deadline deadline = new Deadline("submit report", DEADLINE_DATE);
 
         assertEquals(
-                "D\t0\tsubmit report\t2026-08-10",
+                "D\t0\tsubmit report\t2026-08-10\t\t",
                 deadline.serialize()
         );
     }
@@ -59,7 +59,7 @@ class DeadlineTest {
         deadline.markAsDone();
 
         assertEquals(
-                "D\t1\tsubmit report\t2026-08-10",
+                "D\t1\tsubmit report\t2026-08-10\t\t",
                 deadline.serialize()
         );
     }

@@ -11,6 +11,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import verity.client.ClientList;
+import verity.exception.VerityException;
+
 /**
  * Tests task collection operations.
  */
@@ -141,5 +144,28 @@ class TaskListTest {
                 () -> snapshot.add(new Todo("write book"))
         );
         assertFalse(snapshot.isEmpty());
+    }
+
+    @Test
+    void findByClientId_associatedTasks_returnsMatchesInOrder()
+            throws VerityException {
+        Todo first = new Todo("first");
+        Todo second = new Todo("second");
+        first.addClientId("C001");
+        TaskList tasks = new TaskList(first, second);
+
+        assertEquals(List.of(first), tasks.findByClientId("c001"));
+    }
+
+    @Test
+    void validateClientReferences_missingClient_throwsVerityException()
+            throws VerityException {
+        Todo todo = new Todo("task");
+        todo.addClientId("C001");
+        TaskList tasks = new TaskList(todo);
+
+        assertThrows(
+                VerityException.class,
+                () -> tasks.validateClientReferences(new ClientList()));
     }
 }

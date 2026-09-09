@@ -70,9 +70,9 @@ class StorageTest {
 
         assertEquals(
                 List.of(
-                        "T\t0\tread book",
-                        "D\t0\tsubmit report\t2026-08-10",
-                        "E\t0\tproject meeting\t2026-08-10\t2026-08-12"),
+                        "T\t0\tread book\t\t",
+                        "D\t0\tsubmit report\t2026-08-10\t\t",
+                        "E\t0\tproject meeting\t2026-08-10\t2026-08-12\t\t"),
                 Files.readAllLines(dataFile, StandardCharsets.UTF_8));
     }
 

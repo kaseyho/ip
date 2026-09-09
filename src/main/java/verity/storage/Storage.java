@@ -56,6 +56,10 @@ public class Storage {
         writeToFile(fileContents);
     }
 
+    public Path getDataFilePath() {
+        return dataFilePath;
+    }
+
     /**
      * Writes the supplied contents to the data file.
      *

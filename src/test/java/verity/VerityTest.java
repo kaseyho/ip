@@ -39,7 +39,7 @@ class VerityTest {
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
         Files.writeString(
                 dataFile,
-                "T\t0\tread book" + System.lineSeparator(),
+                "T\t0\tread book\t\t" + System.lineSeparator(),
                 StandardCharsets.UTF_8);
 
         String output = runWithInput(dataFile, "list\nbye\n");
@@ -105,7 +105,7 @@ class VerityTest {
         assertTrue(response.contains("I've added this task"));
         assertTrue(response.contains("[T][ ] read book"));
         assertEquals(
-                "T\t0\tread book" + System.lineSeparator(),
+                "T\t0\tread book\t\t" + System.lineSeparator(),
                 Files.readString(dataFile));
     }
 
@@ -145,6 +145,90 @@ class VerityTest {
 
         assertTrue(errorResponse.contains("I could not save your tasks."));
         assertFalse(listResponse.contains("phantom"));
+    }
+
+    @Test
+    void getResponse_clientWorkflow_persistsAssociatesAndDeletesClient()
+            throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Path clientFile = temporaryDirectory.resolve("clients.txt");
+        Verity verity = new Verity(taskFile, clientFile);
+
+        String addClientResponse = verity.getResponse(
+                "client add /name Alice Tan /email alice@example.com");
+        String addTaskResponse = verity.getResponse(
+                "todo Prepare invoice /client C001");
+        String viewResponse = verity.getResponse("client view C001");
+        String warningResponse = verity.getResponse("client delete C001");
+        String deleteResponse = verity.getResponse(
+                "client delete C001 confirm");
+        String taskListResponse = verity.getResponse("list");
+
+        assertTrue(addClientResponse.contains("Client added:"));
+        assertTrue(addTaskResponse.contains("Prepare invoice"));
+        assertTrue(viewResponse.contains("Prepare invoice"));
+        assertTrue(warningResponse.contains("is permanent"));
+        assertTrue(deleteResponse.contains("Client deleted:"));
+        assertTrue(taskListResponse.contains(
+                "Former client Alice Tan (C001) was deleted."));
+        assertTrue(Files.readString(clientFile).startsWith("NEXT_ID\t2"));
+    }
+
+    @Test
+    void getResponse_existingClientFile_loadsClient() throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Path clientFile = temporaryDirectory.resolve("clients.txt");
+        Files.writeString(
+                clientFile,
+                "NEXT_ID\t2" + System.lineSeparator()
+                        + "C\tC001\tAlice Tan\t\talice@example.com\t\t\t\temail"
+                        + System.lineSeparator(),
+                StandardCharsets.UTF_8);
+
+        String response = new Verity(taskFile, clientFile)
+                .getResponse("client view C001");
+
+        assertTrue(response.contains("Name: Alice Tan"));
+        assertTrue(response.contains("Assigned tasks:\n      None"));
+    }
+
+    @Test
+    void getResponse_corruptedClientFile_returnsCorruptionMessage()
+            throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Path clientFile = temporaryDirectory.resolve("clients.txt");
+        Files.writeString(
+                clientFile,
+                "invalid header" + System.lineSeparator(),
+                StandardCharsets.UTF_8);
+
+        String response = new Verity(taskFile, clientFile).getResponse("list");
+
+        assertTrue(response.contains("The saved client data is corrupted."));
+    }
+
+    @Test
+    void getResponse_clientFieldWithTrailingWhitespace_rejectsUntrimmedValue() {
+        Verity verity = new Verity(
+                temporaryDirectory.resolve("tasks.txt"));
+
+        String response = verity.getResponse("client add /name Alice Tan ");
+
+        assertTrue(response.contains(
+                "Client name cannot start or end with whitespace."));
+    }
+
+    @Test
+    void getResponse_missingClientOnNewTask_rejectsTaskWithoutSaving()
+            throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Verity verity = new Verity(taskFile);
+
+        String response = verity.getResponse(
+                "todo Prepare invoice /client C001");
+
+        assertTrue(response.contains("That client ID does not exist: C001."));
+        assertFalse(Files.exists(taskFile));
     }
 
     private static String runWithInput(Path dataFile, String input) {

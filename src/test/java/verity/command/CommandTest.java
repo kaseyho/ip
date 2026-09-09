@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import verity.exception.VerityException;
 import verity.storage.Storage;
 import verity.task.Deadline;
 import verity.task.TaskList;
@@ -44,7 +45,7 @@ class CommandTest {
 
     @Test
     void addCommand_execute_addsTaskSavesItAndReturnsResponse()
-            throws IOException {
+            throws IOException, VerityException {
         TaskList tasks = new TaskList();
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
         Todo todo = new Todo("read book");
@@ -56,7 +57,7 @@ class CommandTest {
         assertEquals(1, tasks.size());
         assertEquals(todo, tasks.get(0));
         assertEquals(
-                "T\t0\tread book" + System.lineSeparator(),
+                "T\t0\tread book\t\t" + System.lineSeparator(),
                 Files.readString(dataFile));
         assertTrue(response.contains("I've added this task"));
     }
@@ -90,7 +91,7 @@ class CommandTest {
 
         assertEquals("[T][X] read book", tasks.get(0).getStatus());
         assertEquals(
-                "T\t1\tread book" + System.lineSeparator(),
+                "T\t1\tread book\t\t" + System.lineSeparator(),
                 Files.readString(dataFile));
         assertTrue(response.contains("marked this task as done"));
     }
@@ -109,7 +110,7 @@ class CommandTest {
 
         assertEquals("[T][ ] read book", tasks.get(0).getStatus());
         assertEquals(
-                "T\t0\tread book" + System.lineSeparator(),
+                "T\t0\tread book\t\t" + System.lineSeparator(),
                 Files.readString(dataFile));
         assertTrue(response.contains("marked this task as not done yet"));
     }
