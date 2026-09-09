@@ -7,8 +7,8 @@ import java.util.Locale;
  * Represents a task that can be tracked and stored.
  */
 public abstract class Task {
-    protected String description;
-    protected boolean isDone;
+    private final String description;
+    private boolean isDone;
 
     /**
      * Creates an incomplete task with the specified description.
@@ -21,10 +21,9 @@ public abstract class Task {
     }
 
     /**
-     * Returns a user-facing summary of this task.
-     * The summary includes its completion status and description.
+     * Returns a display string containing the task's completion status and description.
      *
-     * @return Formatted task summary.
+     * @return Display string for the task.
      */
     public String getStatus() {
         return "[" + (isDone ? "X" : " ") + "] " + description;
@@ -43,6 +42,15 @@ public abstract class Task {
     }
 
     /**
+     * Returns this task's description.
+     *
+     * @return Task description.
+     */
+    protected final String getDescription() {
+        return description;
+    }
+
+    /**
      * Returns a line representing this task in the data file.
      *
      * @return Serialized task data.
@@ -57,7 +65,7 @@ public abstract class Task {
      */
     public abstract boolean occursOn(LocalDate date);
 
-    protected String getStorageStatus() {
+    protected final String getStorageStatus() {
         return isDone ? "1" : "0";
     }
 

@@ -2,6 +2,7 @@ package verity.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -92,5 +93,20 @@ class EventTest {
         );
 
         assertTrue(singleDayEvent.occursOn(eventDate));
+    }
+
+    @Test
+    void constructor_reversedDates_throwsIllegalArgumentException() {
+        LocalDate startDate = LocalDate.of(2026, 8, 12);
+        LocalDate endDate = LocalDate.of(2026, 8, 10);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Event(
+                        "project meeting", startDate, endDate));
+
+        assertEquals(
+                "The event end date cannot be before the start date.",
+                exception.getMessage());
     }
 }

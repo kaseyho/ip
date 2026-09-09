@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import verity.command.AddCommand;
 import verity.command.Command;
+import verity.command.CommandContext;
 import verity.command.DeleteCommand;
 import verity.command.ExitCommand;
 import verity.command.FindCommand;
@@ -71,29 +72,37 @@ class ParserTest {
     }
 
     @Test
-    void parse_todoCommand_createsTodoAddCommand() throws Exception {
+    void parse_todoCommand_createsTodoAddCommand()
+            throws IOException, VerityException {
         Command command = parser.parse("todo read book", 0);
         TaskList tasks = new TaskList();
 
-        command.execute(
+        CommandContext context = new CommandContext(
                 tasks,
                 new Ui(),
-                new Storage(temporaryDirectory.resolve("todo.txt")));
+                new Storage(
+                        temporaryDirectory.resolve("todo.txt")));
+
+        command.execute(context);
 
         assertInstanceOf(AddCommand.class, command);
         assertEquals("[T][ ] read book", tasks.get(0).getStatus());
     }
 
     @Test
-    void parse_deadlineCommand_createsDeadlineAddCommand() throws Exception {
+    void parse_deadlineCommand_createsDeadlineAddCommand()
+            throws IOException, VerityException {
         Command command = parser.parse(
                 "deadline submit report /by 2026-08-10", 0);
         TaskList tasks = new TaskList();
 
-        command.execute(
+        CommandContext context = new CommandContext(
                 tasks,
                 new Ui(),
-                new Storage(temporaryDirectory.resolve("deadline.txt")));
+                new Storage(
+                        temporaryDirectory.resolve("deadline.txt")));
+
+        command.execute(context);
 
         assertInstanceOf(AddCommand.class, command);
         assertEquals(
@@ -102,16 +111,20 @@ class ParserTest {
     }
 
     @Test
-    void parse_eventCommand_createsEventAddCommand() throws Exception {
+    void parse_eventCommand_createsEventAddCommand()
+            throws IOException, VerityException {
         Command command = parser.parse(
                 "event project meeting /from 2026-08-10 /to 2026-08-12",
                 0);
         TaskList tasks = new TaskList();
 
-        command.execute(
+        CommandContext context = new CommandContext(
                 tasks,
                 new Ui(),
-                new Storage(temporaryDirectory.resolve("event.txt")));
+                new Storage(
+                        temporaryDirectory.resolve("event.txt")));
+
+        command.execute(context);
 
         assertInstanceOf(AddCommand.class, command);
         assertEquals(
@@ -134,7 +147,8 @@ class ParserTest {
                 VerityException.class,
                 () -> parser.parse("delete 0", 1));
 
-        assertEquals("That task number does not exist.", exception.getMessage());
+        assertEquals(
+                "That task number does not exist.", exception.getMessage());
     }
 
     @Test
@@ -264,6 +278,39 @@ class ParserTest {
 
         assertEquals(
                 "Line 1: task fields cannot be empty.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_byeWithArgument_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("bye now", 0));
+
+        assertEquals(
+                "The bye command does not accept arguments.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_listWithArgument_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("list all", 0));
+
+        assertEquals(
+                "The list command does not accept arguments.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_taskNumberWithExtraArgument_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("mark 1 extra", 1));
+
+        assertEquals(
+                "A task command accepts exactly one task number.",
                 exception.getMessage());
     }
 }

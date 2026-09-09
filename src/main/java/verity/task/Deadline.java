@@ -41,7 +41,7 @@ public class Deadline extends Task {
      */
     @Override
     public String serialize() {
-        return String.join("\t", "D", getStorageStatus(), description,
+        return String.join("\t", "D", getStorageStatus(), getDescription(),
                 dueDate.toString());
     }
 

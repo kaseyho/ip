@@ -2,10 +2,6 @@ package verity.command;
 
 import java.io.IOException;
 
-import verity.storage.Storage;
-import verity.task.TaskList;
-import verity.ui.Ui;
-
 /**
  * Represents an executable user command.
  */
@@ -24,14 +20,11 @@ public abstract class Command {
     /**
      * Executes the command and returns its user-facing response.
      *
-     * @param tasks Task list to operate on.
-     * @param ui UI used to format feedback.
-     * @param storage Storage used to save changes.
+     * @param context Command execution context.
      * @return User-facing response after execution.
      * @throws IOException If task changes cannot be saved.
      */
-    public abstract String execute(
-            TaskList tasks, Ui ui, Storage storage)
+    public abstract String execute(CommandContext context)
             throws IOException;
 
     /**

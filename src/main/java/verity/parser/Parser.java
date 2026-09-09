@@ -1,8 +1,6 @@
 package verity.parser;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -26,6 +24,23 @@ import verity.task.Todo;
  */
 public class Parser {
 
+    private static final String DEADLINE_DATE_MARKER = "/by";
+    private static final String EVENT_START_DATE_MARKER = "/from";
+    private static final String EVENT_END_DATE_MARKER = "/to";
+    private static final String COMMAND_BYE = "bye";
+    private static final String COMMAND_LIST = "list";
+    private static final String COMMAND_MARK = "mark";
+    private static final String COMMAND_UNMARK = "unmark";
+    private static final String COMMAND_DELETE = "delete";
+    private static final String COMMAND_TODO = "todo";
+    private static final String COMMAND_DEADLINE = "deadline";
+    private static final String COMMAND_EVENT = "event";
+    private static final String COMMAND_FIND = "find";
+    private static final String COMMAND_FIND_DATE = "finddate";
+
+    private final SavedTaskParser savedTaskParser =
+            new SavedTaskParser();
+
     /**
      * Parses user input and creates the command to execute.
      *
@@ -41,27 +56,50 @@ public class Parser {
                 commandParts[0].toLowerCase(Locale.ROOT);
 
         return switch (commandWord) {
-            case "bye" -> new ExitCommand();
-            case "list" -> new ListCommand();
-            case "mark" -> new MarkCommand(
+            case COMMAND_BYE -> {
+                requireNoArguments(commandParts, COMMAND_BYE);
+                yield new ExitCommand();
+            }
+            case COMMAND_LIST -> {
+                requireNoArguments(commandParts, COMMAND_LIST);
+                yield new ListCommand();
+            }
+            case COMMAND_MARK -> new MarkCommand(
                     parseTaskNumber(commandParts, taskCount));
-            case "unmark" -> new UnmarkCommand(
+            case COMMAND_UNMARK -> new UnmarkCommand(
                     parseTaskNumber(commandParts, taskCount));
-            case "delete" -> new DeleteCommand(
+            case COMMAND_DELETE -> new DeleteCommand(
                     parseTaskNumber(commandParts, taskCount));
-            case "todo" -> new AddCommand(
+            case COMMAND_TODO -> new AddCommand(
                     parseTodo(commandParts));
-            case "deadline" -> new AddCommand(
+            case COMMAND_DEADLINE -> new AddCommand(
                     parseDeadline(commandParts));
-            case "event" -> new AddCommand(
+            case COMMAND_EVENT -> new AddCommand(
                     parseEvent(commandParts));
-            case "find" -> new FindCommand(
+            case COMMAND_FIND -> new FindCommand(
                     parseFindKeyword(commandParts));
-            case "finddate" -> new FindDateCommand(
+            case COMMAND_FIND_DATE -> new FindDateCommand(
                     parseFindDate(commandParts));
             default -> throw new VerityException(
                     "I don't know that command.");
         };
+    }
+
+    /**
+     * Ensures that a command has no arguments.
+     *
+     * @param commandParts Parts of the command.
+     * @param commandName Name of the command.
+     * @throws VerityException If an argument was supplied.
+     */
+    private void requireNoArguments(
+            String[] commandParts, String commandName)
+            throws VerityException {
+        if (commandParts.length != 1) {
+            throw new VerityException(
+                    "The " + commandName
+                            + " command does not accept arguments.");
+        }
     }
 
     /**
@@ -76,6 +114,11 @@ public class Parser {
             throws VerityException {
         if (commandParts.length < 2) {
             throw new VerityException("Please provide a task number.");
+        }
+
+        if (commandParts.length > 2) {
+            throw new VerityException(
+                    "A task command accepts exactly one task number.");
         }
 
         int taskIndex;
@@ -118,89 +161,124 @@ public class Parser {
      */
     private Deadline parseDeadline(String[] commandParts)
             throws VerityException {
-        int partCount = commandParts.length;
-        int byIndex = 1;
-
-        while (byIndex < partCount
-                && !commandParts[byIndex].equals("/by")) {
-            byIndex++;
-        }
-
-        if (byIndex == 1) {
-            throw new VerityException(
-                    "The description of a deadline cannot be empty.");
-        }
-        if (byIndex == partCount) {
-            throw new VerityException(
-                    "A deadline must include a /by date.");
-        }
-        if (byIndex + 1 == partCount) {
-            throw new VerityException(
-                    "The deadline date cannot be empty.");
-        }
+        int byIndex = findMarker(commandParts, 1, DEADLINE_DATE_MARKER);
+        validateDeadlineArguments(commandParts, byIndex);
 
         String description = joinWords(commandParts, 1, byIndex);
-        String dateText = joinWords(
-                commandParts, byIndex + 1, partCount);
+        String dateText = joinWords(commandParts, byIndex + 1, commandParts.length);
 
-        return new Deadline(description, parseDate(dateText));
+        return new Deadline(description, TaskFactory.parseDate(dateText));
     }
 
     /**
      * Parses an event command.
      *
-     * @param commandParts Parts of the user verity.command.
+     * @param commandParts Parts of the user command.
      * @return Parsed event.
      * @throws VerityException If its description or dates are invalid.
      */
     private Event parseEvent(String[] commandParts)
             throws VerityException {
-        int partCount = commandParts.length;
-        int fromIndex = 1;
+        int fromIndex = findMarker(
+                commandParts, 1, EVENT_START_DATE_MARKER);
+        validateEventStartArguments(commandParts, fromIndex);
 
-        while (fromIndex < partCount
-                && !commandParts[fromIndex].equals("/from")) {
-            fromIndex++;
+        int toIndex = findMarker(
+                commandParts, fromIndex + 1, EVENT_END_DATE_MARKER);
+        validateEventEndArguments(commandParts, fromIndex, toIndex);
+
+        String description = joinWords(commandParts, 1, fromIndex);
+        LocalDate fromDate = TaskFactory.parseDate(joinWords(
+                commandParts, fromIndex + 1, toIndex));
+        LocalDate toDate = TaskFactory.parseDate(joinWords(
+                commandParts, toIndex + 1, commandParts.length));
+
+        return TaskFactory.createEvent(description, fromDate, toDate);
+    }
+
+    /**
+     * Validates the description and date arguments of a deadline command.
+     *
+     * @param commandParts Parts of the deadline command.
+     * @param byIndex Index of the {@code /by} marker.
+     * @throws VerityException If a required argument is missing.
+     */
+    private void validateDeadlineArguments(
+            String[] commandParts, int byIndex)
+            throws VerityException {
+        if (byIndex == 1) {
+            throw new VerityException(
+                    "The description of a deadline cannot be empty.");
         }
 
+        if (byIndex == commandParts.length) {
+            throw new VerityException(
+                    "A deadline must include a /by date.");
+        }
+
+        if (byIndex == commandParts.length - 1) {
+            throw new VerityException(
+                    "The deadline date cannot be empty.");
+        }
+    }
+
+    /**
+     * Validates an event description and its {@code /from} marker.
+     *
+     * @param commandParts Parts of the event command.
+     * @param fromIndex Index of the {@code /from} marker.
+     * @throws VerityException If the description or marker is missing.
+     */
+    private void validateEventStartArguments(
+            String[] commandParts, int fromIndex)
+            throws VerityException {
         if (fromIndex == 1) {
             throw new VerityException(
                     "The description of an event cannot be empty.");
         }
-        if (fromIndex == partCount) {
+
+        if (fromIndex == commandParts.length) {
             throw new VerityException(
                     "An event must include a /from date and a /to date.");
         }
+    }
 
-        int toIndex = fromIndex + 1;
-        while (toIndex < partCount
-                && !commandParts[toIndex].equals("/to")) {
-            toIndex++;
-        }
-
+    /**
+     * Validates the date arguments following an event's {@code /from} marker.
+     *
+     * @param commandParts Parts of the event command.
+     * @param fromIndex Index of the {@code /from} marker.
+     * @param toIndex Index of the {@code /to} marker.
+     * @throws VerityException If either event date is missing.
+     */
+    private void validateEventEndArguments(
+            String[] commandParts, int fromIndex, int toIndex)
+            throws VerityException {
         if (fromIndex + 1 == toIndex) {
             throw new VerityException(
                     "The event's from date cannot be empty.");
         }
-        if (toIndex == partCount) {
+
+        if (toIndex == commandParts.length) {
             throw new VerityException(
                     "An event must include a /to date.");
         }
-        if (toIndex + 1 == partCount) {
+
+        if (toIndex + 1 == commandParts.length) {
             throw new VerityException(
                     "The event's to date cannot be empty.");
         }
+    }
 
-        String description = joinWords(commandParts, 1, fromIndex);
-        String fromDateText = joinWords(
-                commandParts, fromIndex + 1, toIndex);
-        String toDateText = joinWords(
-                commandParts, toIndex + 1, partCount);
+    private int findMarker(String[] commandParts, int startIndex, String marker) {
+        int markerIndex = startIndex;
 
-        return createEvent(
-                description,
-                parseDate(fromDateText),
-                parseDate(toDateText));
+        while (markerIndex < commandParts.length
+                && !commandParts[markerIndex].equals(marker)) {
+            markerIndex++;
+        }
+
+        return markerIndex;
     }
 
     /**
@@ -233,7 +311,7 @@ public class Parser {
                     "Use finddate followed by a date in yyyy-MM-dd format.");
         }
 
-        return parseDate(commandParts[1]);
+        return TaskFactory.parseDate(commandParts[1]);
     }
 
     /**
@@ -245,122 +323,7 @@ public class Parser {
      */
     public List<Task> parseSavedTasks(
             List<String> savedTaskLines) throws VerityException {
-        List<Task> tasks = new ArrayList<>();
-
-        for (int i = 0; i < savedTaskLines.size(); i++) {
-            try {
-                tasks.add(parseTaskLine(savedTaskLines.get(i)));
-            } catch (VerityException exception) {
-                throw new VerityException(
-                        "Line " + (i + 1) + ": "
-                                + exception.getMessage());
-            }
-        }
-
-        return tasks;
-    }
-
-    /**
-     * Parses a date in ISO-8601 format.
-     *
-     * @param dateText Date text to parse.
-     * @return Parsed date.
-     * @throws VerityException If the date text is invalid.
-     */
-    private LocalDate parseDate(String dateText)
-            throws VerityException {
-        try {
-            return LocalDate.parse(dateText);
-        } catch (DateTimeParseException exception) {
-            throw new VerityException(
-                    "Dates must use the format yyyy-MM-dd.");
-        }
-    }
-
-    /**
-     * Creates an event after validating its date range.
-     *
-     * @param description Description of the event.
-     * @param fromDate First date of the event.
-     * @param toDate Last date of the event.
-     * @return Event with the specified details.
-     * @throws VerityException If the end date is before the start date.
-     */
-    private Event createEvent(String description, LocalDate fromDate,
-            LocalDate toDate) throws VerityException {
-        if (toDate.isBefore(fromDate)) {
-            throw new VerityException(
-                    "The event end date cannot be before the start date.");
-        }
-
-        return new Event(description, fromDate, toDate);
-    }
-
-    /**
-     * Reconstructs one task from a saved data line.
-     *
-     * @param taskLine Saved task line.
-     * @return Reconstructed task.
-     * @throws VerityException If the line is corrupted.
-     */
-    private Task parseTaskLine(String taskLine)
-            throws VerityException {
-        String[] fields = taskLine.split("\t", -1);
-        if (fields.length < 3) {
-            throw new VerityException(
-                    "expected at least three fields.");
-        }
-
-        String taskType = fields[0];
-        String storedStatus = fields[1];
-        if (!storedStatus.equals("0")
-                && !storedStatus.equals("1")) {
-            throw new VerityException(
-                    "completion status must be 0 or 1.");
-        }
-
-        Task task;
-        switch (taskType) {
-            case "T" -> {
-                if (fields.length != 3) {
-                    throw new VerityException(
-                            "a todo must have exactly three fields.");
-                }
-                task = new Todo(fields[2]);
-            }
-            case "D" -> {
-                if (fields.length != 4) {
-                    throw new VerityException(
-                            "a deadline must have exactly four fields.");
-                }
-                task = new Deadline(fields[2], parseDate(fields[3]));
-            }
-            case "E" -> {
-                if (fields.length != 5) {
-                    throw new VerityException(
-                            "an event must have exactly five fields.");
-                }
-                task = createEvent(
-                        fields[2],
-                        parseDate(fields[3]),
-                        parseDate(fields[4]));
-            }
-            default -> throw new VerityException(
-                    "unknown task type '" + taskType + "'.");
-        }
-
-        for (int i = 2; i < fields.length; i++) {
-            if (fields[i].isBlank()) {
-                throw new VerityException(
-                        "task fields cannot be empty.");
-            }
-        }
-
-        if (storedStatus.equals("1")) {
-            task.markAsDone();
-        }
-
-        return task;
+        return savedTaskParser.parseSavedTasks(savedTaskLines);
     }
 
     private String joinWords(String[] commandParts, int startIndex,
