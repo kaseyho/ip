@@ -1,11 +1,10 @@
 package verity.parser;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import verity.command.AddCommand;
 import verity.command.Command;
@@ -340,16 +339,6 @@ public class Parser {
                 && endIndex <= commandParts.length
                 : "Word range must be within command parts.";
 
-        StringBuilder result = new StringBuilder();
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (i > startIndex) {
-                result.append(" ");
-            }
-            result.append(commandParts[i]);
-        }
-
-        return result.toString();
         return Arrays.stream(commandParts, startIndex, endIndex)
                 .collect(Collectors.joining(" "));
     }
