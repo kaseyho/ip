@@ -25,6 +25,28 @@ import verity.task.Todo;
  */
 public class Parser {
 
+    private static final String DEADLINE_DATE_MARKER = "/by";
+    private static final String EVENT_START_DATE_MARKER = "/from";
+    private static final String EVENT_END_DATE_MARKER = "/to";
+
+    private static final String TASK_FIELD_SEPARATOR = "\t";
+    private static final String TASK_TYPE_TODO = "T";
+    private static final String TASK_TYPE_DEADLINE = "D";
+    private static final String TASK_TYPE_EVENT = "E";
+    private static final String TASK_STATUS_INCOMPLETE = "0";
+    private static final String TASK_STATUS_COMPLETE = "1";
+
+    private static final int TASK_TYPE_INDEX = 0;
+    private static final int TASK_STATUS_INDEX = 1;
+    private static final int TASK_DESCRIPTION_INDEX = 2;
+    private static final int TODO_FIELD_COUNT = 3;
+    private static final int DEADLINE_FIELD_COUNT = 4;
+    private static final int EVENT_FIELD_COUNT = 5;
+    private static final int MINIMUM_TASK_FIELD_COUNT = 3;
+    private static final int DEADLINE_DATE_INDEX = 3;
+    private static final int EVENT_START_DATE_INDEX = 3;
+    private static final int EVENT_END_DATE_INDEX = 4;
+
     /**
      * Parses user input and creates the command to execute.
      *
@@ -115,30 +137,11 @@ public class Parser {
      */
     private Deadline parseDeadline(String[] commandParts)
             throws VerityException {
-        int partCount = commandParts.length;
-        int byIndex = 1;
-
-        while (byIndex < partCount
-                && !commandParts[byIndex].equals("/by")) {
-            byIndex++;
-        }
-
-        if (byIndex == 1) {
-            throw new VerityException(
-                    "The description of a deadline cannot be empty.");
-        }
-        if (byIndex == partCount) {
-            throw new VerityException(
-                    "A deadline must include a /by date.");
-        }
-        if (byIndex + 1 == partCount) {
-            throw new VerityException(
-                    "The deadline date cannot be empty.");
-        }
+        int byIndex = findMarker(commandParts, 1, DEADLINE_DATE_MARKER);
+        validateDeadlineArguments(commandParts, byIndex);
 
         String description = joinWords(commandParts, 1, byIndex);
-        String dateText = joinWords(
-                commandParts, byIndex + 1, partCount);
+        String dateText = joinWords(commandParts, byIndex + 1, commandParts.length);
 
         return new Deadline(description, parseDate(dateText));
     }
@@ -152,52 +155,99 @@ public class Parser {
      */
     private Event parseEvent(String[] commandParts)
             throws VerityException {
-        int partCount = commandParts.length;
-        int fromIndex = 1;
+        int fromIndex = findMarker(
+                commandParts, 1, EVENT_START_DATE_MARKER);
+        validateEventStartArguments(commandParts, fromIndex);
 
-        while (fromIndex < partCount
-                && !commandParts[fromIndex].equals("/from")) {
-            fromIndex++;
+        int toIndex = findMarker(
+                commandParts, fromIndex + 1, EVENT_END_DATE_MARKER);
+        validateEventEndArguments(commandParts, fromIndex, toIndex);
+
+        String description = joinWords(commandParts, 1, fromIndex);
+        LocalDate fromDate = parseDate(joinWords(
+                commandParts, fromIndex + 1, toIndex));
+        LocalDate toDate = parseDate(joinWords(
+                commandParts, toIndex + 1, commandParts.length));
+
+        return createEvent(description, fromDate, toDate);
+    }
+    /**
+     * Validates the description and date arguments of a deadline command.
+     *
+     * @param commandParts Parts of the deadline command.
+     * @param byIndex Index of the {@code /by} marker.
+     * @throws VerityException If a required argument is missing.
+     */
+    private void validateDeadlineArguments(String[] commandParts, int byIndex) throws VerityException {
+        if (byIndex == 1) {
+            throw new VerityException("The description of a deadline cannot be empty.");
         }
 
+        if (byIndex == commandParts.length) {
+            throw new VerityException("A deadline must include a /by date.");
+        }
+
+        if (byIndex == commandParts.length - 1) {
+            throw new VerityException("The deadline date cannot be empty.");
+        }
+    }
+
+    /**
+     * Validates an event description and its {@code /from} marker.
+     *
+     * @param commandParts Parts of the event command.
+     * @param fromIndex Index of the {@code /from} marker.
+     * @throws VerityException If the description or marker is missing.
+     */
+    private void validateEventStartArguments(
+            String[] commandParts, int fromIndex)
+            throws VerityException {
         if (fromIndex == 1) {
             throw new VerityException(
                     "The description of an event cannot be empty.");
         }
-        if (fromIndex == partCount) {
+
+        if (fromIndex == commandParts.length) {
             throw new VerityException(
                     "An event must include a /from date and a /to date.");
         }
+    }
 
-        int toIndex = fromIndex + 1;
-        while (toIndex < partCount
-                && !commandParts[toIndex].equals("/to")) {
-            toIndex++;
-        }
-
+    /**
+     * Validates the date arguments following an event's {@code /from} marker.
+     *
+     * @param commandParts Parts of the event command.
+     * @param fromIndex Index of the {@code /from} marker.
+     * @param toIndex Index of the {@code /to} marker.
+     * @throws VerityException If either event date is missing.
+     */
+    private void validateEventEndArguments(
+            String[] commandParts, int fromIndex, int toIndex)
+            throws VerityException {
         if (fromIndex + 1 == toIndex) {
             throw new VerityException(
                     "The event's from date cannot be empty.");
         }
-        if (toIndex == partCount) {
+
+        if (toIndex == commandParts.length) {
             throw new VerityException(
                     "An event must include a /to date.");
         }
-        if (toIndex + 1 == partCount) {
+
+        if (toIndex + 1 == commandParts.length) {
             throw new VerityException(
                     "The event's to date cannot be empty.");
         }
+    }
 
-        String description = joinWords(commandParts, 1, fromIndex);
-        String fromDateText = joinWords(
-                commandParts, fromIndex + 1, toIndex);
-        String toDateText = joinWords(
-                commandParts, toIndex + 1, partCount);
+    private int findMarker(String[] commandParts, int startIndex, String marker) {
+        int markerIndex = startIndex;
 
-        return createEvent(
-                description,
-                parseDate(fromDateText),
-                parseDate(toDateText));
+        while (markerIndex < commandParts.length && !commandParts[markerIndex].equals(marker)) {
+            markerIndex++;
+        }
+
+        return markerIndex;
     }
 
     /**
@@ -286,62 +336,156 @@ public class Parser {
      */
     private Task parseTaskLine(String taskLine)
             throws VerityException {
-        String[] fields = taskLine.split("\t", -1);
-        if (fields.length < 3) {
+        String[] fields = splitTaskLine(taskLine);
+        String storedStatus = fields[TASK_STATUS_INDEX];
+
+        validateStoredStatus(storedStatus);
+
+        Task task = createTaskFromFields(fields);
+
+        validateTaskFields(fields);
+        restoreCompletionStatus(task, storedStatus);
+
+        return task;
+    }
+
+    /**
+     * Splits a saved task line into its individual fields.
+     *
+     * @param taskLine Saved task line.
+     * @return Fields contained in the saved line.
+     * @throws VerityException If the line has too few fields.
+     */
+    private String[] splitTaskLine(String taskLine)
+            throws VerityException {
+        String[] fields = taskLine.split(TASK_FIELD_SEPARATOR, -1);
+
+        if (fields.length < MINIMUM_TASK_FIELD_COUNT) {
             throw new VerityException(
                     "expected at least three fields.");
         }
 
-        String taskType = fields[0];
-        String storedStatus = fields[1];
-        if (!storedStatus.equals("0")
-                && !storedStatus.equals("1")) {
+        return fields;
+    }
+
+    /**
+     * Validates a stored completion status.
+     *
+     * @param storedStatus Completion status from the data file.
+     * @throws VerityException If the status is not recognized.
+     */
+    private void validateStoredStatus(String storedStatus)
+            throws VerityException {
+        boolean isIncomplete =
+                storedStatus.equals(TASK_STATUS_INCOMPLETE);
+        boolean isComplete =
+                storedStatus.equals(TASK_STATUS_COMPLETE);
+
+        if (!isIncomplete && !isComplete) {
             throw new VerityException(
                     "completion status must be 0 or 1.");
         }
+    }
 
-        Task task;
-        switch (taskType) {
-            case "T" -> {
-                if (fields.length != 3) {
-                    throw new VerityException(
-                            "a todo must have exactly three fields.");
-                }
-                task = new Todo(fields[2]);
-            }
-            case "D" -> {
-                if (fields.length != 4) {
-                    throw new VerityException(
-                            "a deadline must have exactly four fields.");
-                }
-                task = new Deadline(fields[2], parseDate(fields[3]));
-            }
-            case "E" -> {
-                if (fields.length != 5) {
-                    throw new VerityException(
-                            "an event must have exactly five fields.");
-                }
-                task = createEvent(
-                        fields[2],
-                        parseDate(fields[3]),
-                        parseDate(fields[4]));
-            }
+    /**
+     * Creates a task from validated saved fields.
+     *
+     * @param fields Fields from a saved task line.
+     * @return Reconstructed task.
+     * @throws VerityException If the task type or its fields are invalid.
+     */
+    private Task createTaskFromFields(String[] fields)
+            throws VerityException {
+        String taskType = fields[TASK_TYPE_INDEX];
+
+        return switch (taskType) {
+            case TASK_TYPE_TODO -> createTodoFromFields(fields);
+            case TASK_TYPE_DEADLINE -> createDeadlineFromFields(fields);
+            case TASK_TYPE_EVENT -> createEventFromFields(fields);
             default -> throw new VerityException(
                     "unknown task type '" + taskType + "'.");
-        }
+        };
+    }
 
-        for (int i = 2; i < fields.length; i++) {
+    private Todo createTodoFromFields(String[] fields)
+            throws VerityException {
+        validateFieldCount(
+                fields,
+                TODO_FIELD_COUNT,
+                "a todo must have exactly three fields.");
+
+        return new Todo(fields[TASK_DESCRIPTION_INDEX]);
+    }
+
+    private Deadline createDeadlineFromFields(String[] fields)
+            throws VerityException {
+        validateFieldCount(
+                fields,
+                DEADLINE_FIELD_COUNT,
+                "a deadline must have exactly four fields.");
+
+        return new Deadline(
+                fields[TASK_DESCRIPTION_INDEX],
+                parseDate(fields[DEADLINE_DATE_INDEX]));
+    }
+
+    private Event createEventFromFields(String[] fields)
+            throws VerityException {
+        validateFieldCount(
+                fields,
+                EVENT_FIELD_COUNT,
+                "an event must have exactly five fields.");
+
+        return createEvent(
+                fields[TASK_DESCRIPTION_INDEX],
+                parseDate(fields[EVENT_START_DATE_INDEX]),
+                parseDate(fields[EVENT_END_DATE_INDEX]));
+    }
+
+    /**
+     * Validates the number of fields used to represent a task.
+     *
+     * @param fields Saved task fields.
+     * @param expectedFieldCount Required number of fields.
+     * @param errorMessage Message to use when validation fails.
+     * @throws VerityException If the field count is incorrect.
+     */
+    private void validateFieldCount(
+            String[] fields,
+            int expectedFieldCount,
+            String errorMessage) throws VerityException {
+        if (fields.length != expectedFieldCount) {
+            throw new VerityException(errorMessage);
+        }
+    }
+
+    /**
+     * Checks that the task's description and date fields are not blank.
+     *
+     * @param fields Saved task fields.
+     * @throws VerityException If a required field is blank.
+     */
+    private void validateTaskFields(String[] fields)
+            throws VerityException {
+        for (int i = TASK_DESCRIPTION_INDEX; i < fields.length; i++) {
             if (fields[i].isBlank()) {
                 throw new VerityException(
                         "task fields cannot be empty.");
             }
         }
+    }
 
-        if (storedStatus.equals("1")) {
+    /**
+     * Restores a task's saved completion status.
+     *
+     * @param task Task whose status should be restored.
+     * @param storedStatus Completion status from the data file.
+     */
+    private void restoreCompletionStatus(
+            Task task, String storedStatus) {
+        if (storedStatus.equals(TASK_STATUS_COMPLETE)) {
             task.markAsDone();
         }
-
-        return task;
     }
 
     private String joinWords(String[] commandParts, int startIndex,
