@@ -2,6 +2,8 @@ package verity.command;
 
 import java.io.IOException;
 
+import verity.exception.VerityException;
+
 /**
  * Represents an executable user command.
  */
@@ -22,10 +24,11 @@ public abstract class Command {
      *
      * @param context Command execution context.
      * @return User-facing response after execution.
-     * @throws IOException If task changes cannot be saved.
+     * @throws IOException If changes cannot be saved.
+     * @throws VerityException If the command cannot be completed.
      */
     public abstract String execute(CommandContext context)
-            throws IOException;
+            throws IOException, VerityException;
 
     /**
      * Returns whether this command exits the chatbot.

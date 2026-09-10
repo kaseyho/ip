@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import verity.client.ClientList;
+import verity.exception.VerityException;
+
 /**
  * Stores and manages the user's tasks.
  */
@@ -115,6 +118,36 @@ public class TaskList {
         return tasks.stream()
                 .filter(task -> task.matchesKeyword(keyword))
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Returns tasks associated with a client.
+     *
+     * @param clientId Client ID to find.
+     * @return Associated tasks in task-list order.
+     */
+    public List<Task> findByClientId(String clientId) {
+        return tasks.stream()
+                .filter(task -> task.hasClientId(clientId))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Ensures every stored client reference points to an existing client.
+     *
+     * @param clientList Loaded clients.
+     * @throws VerityException If a task references a missing client.
+     */
+    public void validateClientReferences(ClientList clientList)
+            throws VerityException {
+        for (int i = 0; i < tasks.size(); i++) {
+            for (String clientId : tasks.get(i).getClientIds()) {
+                if (!clientList.containsId(clientId)) {
+                    throw new VerityException("Line " + (i + 1)
+                            + ": unknown client ID '" + clientId + "'.");
+                }
+            }
+        }
     }
 
     /**

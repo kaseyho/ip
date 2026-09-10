@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import verity.client.ClientList;
 import verity.command.AddCommand;
 import verity.command.Command;
 import verity.command.DeleteCommand;
@@ -29,6 +30,7 @@ public class Parser {
     private static final String DEADLINE_DATE_MARKER = "/by";
     private static final String EVENT_START_DATE_MARKER = "/from";
     private static final String EVENT_END_DATE_MARKER = "/to";
+    private static final String TASK_CLIENT_MARKER = "/client";
     private static final String COMMAND_BYE = "bye";
     private static final String COMMAND_LIST = "list";
     private static final String COMMAND_MARK = "mark";
@@ -39,9 +41,14 @@ public class Parser {
     private static final String COMMAND_EVENT = "event";
     private static final String COMMAND_FIND = "find";
     private static final String COMMAND_FIND_DATE = "finddate";
+    private static final String COMMAND_CLIENT = "client";
 
     private final SavedTaskParser savedTaskParser =
             new SavedTaskParser();
+    private final SavedClientParser savedClientParser =
+            new SavedClientParser();
+    private final ClientCommandParser clientCommandParser =
+            new ClientCommandParser();
 
     /**
      * Parses user input and creates the command to execute.
@@ -85,6 +92,8 @@ public class Parser {
                     parseFindKeyword(commandParts));
             case COMMAND_FIND_DATE -> new FindDateCommand(
                     parseFindDate(commandParts));
+            case COMMAND_CLIENT -> clientCommandParser.parse(
+                    fullCommand, taskCount);
             default -> throw new VerityException(
                     "I don't know that command.");
         };
@@ -147,14 +156,18 @@ public class Parser {
      * @throws VerityException If the description is missing.
      */
     private Todo parseTodo(String[] commandParts) throws VerityException {
-        if (commandParts.length == 1) {
+        int clientMarkerIndex = findMarker(
+                commandParts, 1, TASK_CLIENT_MARKER);
+        if (clientMarkerIndex == 1) {
             throw new VerityException(
                     "The description of a todo cannot be empty.");
         }
 
         String description = joinWords(
-                commandParts, 1, commandParts.length);
-        return new Todo(description);
+                commandParts, 1, clientMarkerIndex);
+        Todo todo = new Todo(description);
+        addTaskClientIds(todo, commandParts, clientMarkerIndex);
+        return todo;
     }
 
     /**
@@ -168,11 +181,23 @@ public class Parser {
             throws VerityException {
         int byIndex = findMarker(commandParts, 1, DEADLINE_DATE_MARKER);
         validateDeadlineArguments(commandParts, byIndex);
+        int clientMarkerIndex = findMarker(
+                commandParts, 1, TASK_CLIENT_MARKER);
+        if (clientMarkerIndex < byIndex) {
+            throw new VerityException(
+                    "Client markers must follow the deadline date.");
+        }
+        if (clientMarkerIndex == byIndex + 1) {
+            throw new VerityException("The deadline date cannot be empty.");
+        }
 
         String description = joinWords(commandParts, 1, byIndex);
-        String dateText = joinWords(commandParts, byIndex + 1, commandParts.length);
+        String dateText = joinWords(commandParts, byIndex + 1, clientMarkerIndex);
 
-        return new Deadline(description, TaskFactory.parseDate(dateText));
+        Deadline deadline = new Deadline(
+                description, TaskFactory.parseDate(dateText));
+        addTaskClientIds(deadline, commandParts, clientMarkerIndex);
+        return deadline;
     }
 
     /**
@@ -191,14 +216,25 @@ public class Parser {
         int toIndex = findMarker(
                 commandParts, fromIndex + 1, EVENT_END_DATE_MARKER);
         validateEventEndArguments(commandParts, fromIndex, toIndex);
+        int clientMarkerIndex = findMarker(
+                commandParts, 1, TASK_CLIENT_MARKER);
+        if (clientMarkerIndex < toIndex) {
+            throw new VerityException(
+                    "Client markers must follow the event end date.");
+        }
+        if (clientMarkerIndex == toIndex + 1) {
+            throw new VerityException("The event's to date cannot be empty.");
+        }
 
         String description = joinWords(commandParts, 1, fromIndex);
         LocalDate fromDate = TaskFactory.parseDate(joinWords(
                 commandParts, fromIndex + 1, toIndex));
         LocalDate toDate = TaskFactory.parseDate(joinWords(
-                commandParts, toIndex + 1, commandParts.length));
+                commandParts, toIndex + 1, clientMarkerIndex));
 
-        return TaskFactory.createEvent(description, fromDate, toDate);
+        Event event = TaskFactory.createEvent(description, fromDate, toDate);
+        addTaskClientIds(event, commandParts, clientMarkerIndex);
+        return event;
     }
 
     /**
@@ -279,7 +315,7 @@ public class Parser {
         int markerIndex = startIndex;
 
         while (markerIndex < commandParts.length
-                && !commandParts[markerIndex].equals(marker)) {
+                && !commandParts[markerIndex].equalsIgnoreCase(marker)) {
             markerIndex++;
         }
 
@@ -329,6 +365,37 @@ public class Parser {
     public List<Task> parseSavedTasks(
             List<String> savedTaskLines) throws VerityException {
         return savedTaskParser.parseSavedTasks(savedTaskLines);
+    }
+
+    /**
+     * Reconstructs clients from saved client lines.
+     *
+     * @param savedClientLines Lines read from the client data file.
+     * @return Reconstructed client list.
+     * @throws VerityException If a saved line is corrupted.
+     */
+    public ClientList parseSavedClients(
+            List<String> savedClientLines) throws VerityException {
+        return savedClientParser.parseSavedClients(savedClientLines);
+    }
+
+    private void addTaskClientIds(Task task, String[] commandParts,
+            int clientMarkerIndex) throws VerityException {
+        if (clientMarkerIndex == commandParts.length) {
+            return;
+        }
+        int currentIndex = clientMarkerIndex;
+        while (currentIndex < commandParts.length) {
+            if (!commandParts[currentIndex].equalsIgnoreCase(TASK_CLIENT_MARKER)) {
+                throw new VerityException(
+                        "Use /client followed by one client ID.");
+            }
+            if (currentIndex + 1 >= commandParts.length) {
+                throw new VerityException("The /client value cannot be empty.");
+            }
+            task.addClientId(commandParts[currentIndex + 1]);
+            currentIndex += 2;
+        }
     }
 
     private String joinWords(String[] commandParts, int startIndex,

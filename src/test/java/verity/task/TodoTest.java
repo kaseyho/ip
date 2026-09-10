@@ -32,7 +32,7 @@ class TodoTest {
     void serialize_incompleteTodo_returnsStorageFormat() {
         Todo todo = new Todo("read book");
 
-        assertEquals("T\t0\tread book", todo.serialize());
+        assertEquals("T\t0\tread book\t\t", todo.serialize());
     }
 
     @Test
@@ -40,7 +40,7 @@ class TodoTest {
         Todo todo = new Todo("read book");
         todo.markAsDone();
 
-        assertEquals("T\t1\tread book", todo.serialize());
+        assertEquals("T\t1\tread book\t\t", todo.serialize());
     }
 
     @Test

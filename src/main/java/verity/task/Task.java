@@ -1,13 +1,22 @@
 package verity.task;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
+
+import verity.client.Client;
+import verity.exception.VerityException;
+import verity.storage.StorageTextCodec;
 
 /**
  * Represents a task that can be tracked and stored.
  */
 public abstract class Task {
     private final String description;
+    private final ArrayList<String> clientIds;
+    private final ArrayList<String> formerClientNotes;
     private boolean isDone;
 
     /**
@@ -19,6 +28,8 @@ public abstract class Task {
         assert description != null : "Task description must not be null.";
 
         this.description = description;
+        this.clientIds = new ArrayList<>();
+        this.formerClientNotes = new ArrayList<>();
         this.isDone = false;
     }
 
@@ -53,11 +64,83 @@ public abstract class Task {
     }
 
     /**
+     * Associates a client with this task.
+     *
+     * @param clientId Client ID to associate.
+     * @throws VerityException If the client ID is malformed or duplicated.
+     */
+    public void addClientId(String clientId) throws VerityException {
+        String canonicalId = Client.formatId(Client.parseId(clientId));
+        if (clientIds.contains(canonicalId)) {
+            throw new VerityException(
+                    "Client " + canonicalId + " is already associated with this task.");
+        }
+        clientIds.add(canonicalId);
+        clientIds.sort(Comparator.comparingInt(Task::numericClientId));
+    }
+
+    /**
+     * Removes a client association from this task.
+     *
+     * @param clientId Client ID to remove.
+     * @return True if the association existed.
+     * @throws VerityException If the client ID is malformed.
+     */
+    public boolean removeClientId(String clientId) throws VerityException {
+        String canonicalId = Client.formatId(Client.parseId(clientId));
+        return clientIds.remove(canonicalId);
+    }
+
+    /**
+     * Returns whether this task is associated with a client.
+     *
+     * @param clientId Client ID to find.
+     * @return True if the client is associated.
+     */
+    public boolean hasClientId(String clientId) {
+        try {
+            return clientIds.contains(Client.formatId(Client.parseId(clientId)));
+        } catch (VerityException exception) {
+            return false;
+        }
+    }
+
+    public List<String> getClientIds() {
+        return List.copyOf(clientIds);
+    }
+
+    /**
+     * Adds a note recording a deleted former client.
+     *
+     * @param note Former-client note.
+     */
+    public void addFormerClientNote(String note) {
+        assert note != null && !note.isBlank()
+                : "Former-client note must not be blank.";
+        formerClientNotes.add(note);
+    }
+
+    public List<String> getFormerClientNotes() {
+        return List.copyOf(formerClientNotes);
+    }
+
+    /**
      * Returns a line representing this task in the data file.
      *
      * @return Serialized task data.
      */
     public abstract String serialize();
+
+    /**
+     * Appends client associations and former-client notes to serialized task data.
+     *
+     * @param baseTaskData Existing task fields.
+     * @return Extended serialized task data.
+     */
+    protected final String appendClientMetadata(String baseTaskData) {
+        String notes = StorageTextCodec.encode(String.join("\n", formerClientNotes));
+        return baseTaskData + "\t" + String.join(",", clientIds) + "\t" + notes;
+    }
 
     /**
      * Returns whether this task occurs on the specified date.
@@ -83,5 +166,9 @@ public abstract class Task {
      */
     public void markAsUndone() {
         this.isDone = false;
+    }
+
+    private static int numericClientId(String clientId) {
+        return Integer.parseInt(clientId.substring(1));
     }
 }

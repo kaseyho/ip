@@ -12,7 +12,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import verity.client.ClientList;
 import verity.command.AddCommand;
+import verity.command.ClientListCommand;
 import verity.command.Command;
 import verity.command.CommandContext;
 import verity.command.DeleteCommand;
@@ -23,6 +25,7 @@ import verity.command.ListCommand;
 import verity.command.MarkCommand;
 import verity.command.UnmarkCommand;
 import verity.exception.VerityException;
+import verity.storage.ClientStorage;
 import verity.storage.Storage;
 import verity.task.Deadline;
 import verity.task.Event;
@@ -61,6 +64,9 @@ class ParserTest {
                 FindDateCommand.class,
                 parser.parse("finddate 2026-08-10", 0));
         assertInstanceOf(
+                ClientListCommand.class,
+                parser.parse("client list", 0));
+        assertInstanceOf(
                 MarkCommand.class,
                 parser.parse("mark 1", 1));
         assertInstanceOf(
@@ -69,6 +75,27 @@ class ParserTest {
         assertInstanceOf(
                 DeleteCommand.class,
                 parser.parse("delete 1", 1));
+    }
+
+    @Test
+    void parse_todoWithClients_addsAssociatedTask()
+            throws IOException, VerityException {
+        Command command = parser.parse(
+                "todo prepare invoice /client C001 /client C002", 0);
+        TaskList tasks = new TaskList();
+        ClientList clients = new ClientList();
+        clients.addNewClient("Alice Tan", "", "", "", "", "", null);
+        clients.addNewClient("Bob Lee", "", "", "", "", "", null);
+        CommandContext context = new CommandContext(
+                tasks,
+                clients,
+                new Ui(),
+                new Storage(temporaryDirectory.resolve("associated-task.txt")),
+                new ClientStorage(temporaryDirectory.resolve("clients.txt")));
+
+        command.execute(context);
+
+        assertEquals(List.of("C001", "C002"), tasks.get(0).getClientIds());
     }
 
     @Test
@@ -237,6 +264,19 @@ class ParserTest {
         assertEquals(
                 "[E][ ] project meeting (from: Aug 10 2026 to: Aug 12 2026)",
                 tasks.get(2).getStatus());
+    }
+
+    @Test
+    void parseSavedTasks_extendedLine_restoresClientMetadata()
+            throws VerityException {
+        List<Task> tasks = parser.parseSavedTasks(List.of(
+                "T\t0\tprepare invoice\tC002,C001"
+                        + "\tFormer client Carol Lim (C003) was deleted."));
+
+        assertEquals(List.of("C001", "C002"), tasks.get(0).getClientIds());
+        assertEquals(
+                List.of("Former client Carol Lim (C003) was deleted."),
+                tasks.get(0).getFormerClientNotes());
     }
 
     @Test

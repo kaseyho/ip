@@ -59,13 +59,13 @@ public class Event extends Task {
      */
     @Override
     public String serialize() {
-        return String.join(
+        return appendClientMetadata(String.join(
                 "\t",
                 "E",
                 getStorageStatus(),
                 getDescription(),
                 fromDate.toString(),
-                toDate.toString());
+                toDate.toString()));
     }
 
     /**

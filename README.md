@@ -32,3 +32,33 @@ Run all tests with:
 
 ```bash
 ./gradlew test
+```
+
+## Client management
+
+Verity can store client contact information and associate clients with tasks.
+Client IDs are generated automatically in the form `C001`, `C002`, and so on.
+
+```text
+client add /name Alice Tan /phone +65 9123 4567 /email alice@example.com
+client list
+client view C001
+client find alice
+client edit C001 /phone +65 9876 5432
+client edit C001 /clear phone
+client associate C001 /task 1
+client dissociate C001 /task 1
+client delete C001
+client delete C001 confirm
+```
+
+Client assignment is optional when creating a task:
+
+```text
+todo Prepare invoice /client C001
+deadline Submit proposal /by 2026-09-30 /client C001
+event Client meeting /from 2026-09-20 /to 2026-09-20 /client C001
+```
+
+See the [user guide](docs/README.md) for field validation, command details,
+and deletion behavior.

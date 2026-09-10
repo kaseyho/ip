@@ -33,7 +33,8 @@ public class Todo extends Task {
      */
     @Override
     public String serialize() {
-        return String.join("\t", "T", getStorageStatus(), getDescription());
+        return appendClientMetadata(
+                String.join("\t", "T", getStorageStatus(), getDescription()));
     }
 
     /**

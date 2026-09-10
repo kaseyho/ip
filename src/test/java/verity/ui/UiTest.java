@@ -11,6 +11,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import verity.client.Client;
+import verity.client.PreferredContactMethod;
+import verity.exception.VerityException;
 import verity.task.Deadline;
 import verity.task.TaskList;
 import verity.task.Todo;
@@ -181,5 +184,42 @@ class UiTest {
         assertTrue(corruptedDataError.contains("Line 1 is invalid."));
         assertTrue(savingError.contains(
                 "I could not save your tasks."));
+    }
+
+    @Test
+    void getClientListMessage_clients_returnsAllFields()
+            throws VerityException {
+        Client client = new Client(
+                1,
+                "Alice Tan",
+                "+65 9123 4567",
+                "alice@example.com",
+                "",
+                "Acme",
+                "Called\nRequested quote",
+                PreferredContactMethod.EMAIL);
+
+        String response = new Ui().getClientListMessage(List.of(client));
+
+        assertTrue(response.contains("C001"));
+        assertTrue(response.contains("Name: Alice Tan"));
+        assertTrue(response.contains("Address: -"));
+        assertTrue(response.contains("Notes: Called\n             Requested quote"));
+        assertTrue(response.contains("Total: 1 client."));
+    }
+
+    @Test
+    void getTaskListMessage_associatedTask_returnsClientMetadata()
+            throws VerityException {
+        Todo todo = new Todo("Prepare invoice");
+        todo.addClientId("C001");
+        todo.addFormerClientNote(
+                "Former client Bob Lee (C002) was deleted.");
+
+        String response = new Ui().getTaskListMessage(new TaskList(todo));
+
+        assertTrue(response.contains("Clients: C001"));
+        assertTrue(response.contains(
+                "Note: Former client Bob Lee (C002) was deleted."));
     }
 }

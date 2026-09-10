@@ -2,12 +2,15 @@ package verity;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
+import verity.client.ClientList;
 import verity.command.Command;
 import verity.command.CommandContext;
 import verity.exception.VerityException;
 import verity.parser.Parser;
+import verity.storage.ClientStorage;
 import verity.storage.Storage;
 import verity.task.Task;
 import verity.task.TaskList;
@@ -19,9 +22,11 @@ import verity.ui.Ui;
 public class Verity {
     private final Ui ui;
     private final Storage storage;
+    private final ClientStorage clientStorage;
     private final Parser parser;
 
     private TaskList tasks;
+    private ClientList clients;
     private boolean isInitialized;
     private String initializationErrorMessage;
     private String commandType;
@@ -32,10 +37,22 @@ public class Verity {
      * @param dataFilePath Path of the task data file.
      */
     public Verity(Path dataFilePath) {
+        this(dataFilePath, dataFilePath.resolveSibling("clients.txt"));
+    }
+
+    /**
+     * Creates a chatbot that stores tasks and clients at specified paths.
+     *
+     * @param taskDataFilePath Path of the task data file.
+     * @param clientDataFilePath Path of the client data file.
+     */
+    public Verity(Path taskDataFilePath, Path clientDataFilePath) {
         this.ui = new Ui();
-        this.storage = new Storage(dataFilePath);
+        this.storage = new Storage(taskDataFilePath);
+        this.clientStorage = new ClientStorage(clientDataFilePath);
         this.parser = new Parser();
         this.tasks = new TaskList();
+        this.clients = new ClientList();
         this.isInitialized = false;
         this.initializationErrorMessage = null;
         this.commandType = null;
@@ -53,14 +70,14 @@ public class Verity {
         }
 
         CommandContext commandContext =
-                new CommandContext(tasks, ui, storage);
+                new CommandContext(tasks, clients, ui, storage, clientStorage);
 
         boolean isExit = false;
         while (!isExit) {
+            Command command = null;
             try {
                 String fullCommand = ui.readCommand();
-                Command command =
-                        parser.parse(fullCommand, tasks.size());
+                command = parser.parse(fullCommand, tasks.size());
                 String response = command.execute(commandContext);
 
                 System.out.println(response);
@@ -69,7 +86,9 @@ public class Verity {
                 System.out.println(ui.getCommandErrorMessage(
                         exception.getMessage()));
             } catch (IOException exception) {
-                System.out.println(ui.getSavingErrorMessage());
+                System.out.println(isClientCommand(command)
+                        ? ui.getSavingChangesErrorMessage()
+                        : ui.getSavingErrorMessage());
                 return;
             }
         }
@@ -97,14 +116,21 @@ public class Verity {
         List<String> taskSnapshot = tasks.getTasks().stream()
                 .map(task -> task.serialize())
                 .toList();
+        List<String> clientSnapshot = getClientSnapshot();
         CommandContext commandContext =
-                new CommandContext(tasks, ui, storage);
+                new CommandContext(tasks, clients, ui, storage, clientStorage);
         try {
             String response = command.execute(commandContext);
             commandType = command.getClass().getSimpleName();
             return response;
+        } catch (VerityException exception) {
+            restoreState(taskSnapshot, clientSnapshot);
+            return ui.getCommandErrorMessage(exception.getMessage());
         } catch (IOException exception) {
-            restoreTasks(taskSnapshot);
+            restoreState(taskSnapshot, clientSnapshot);
+            if (isClientCommand(command)) {
+                return ui.getSavingChangesErrorMessage();
+            }
             return ui.getSavingErrorMessage();
         }
     }
@@ -123,17 +149,33 @@ public class Verity {
      *
      * @param taskSnapshot Serialized tasks from before command execution.
      */
-    private void restoreTasks(List<String> taskSnapshot) {
+    private void restoreState(List<String> taskSnapshot, List<String> clientSnapshot) {
         try {
+            clients = parser.parseSavedClients(clientSnapshot);
             tasks = new TaskList(
                     parser.parseSavedTasks(taskSnapshot)
                             .toArray(Task[]::new));
+            tasks.validateClientReferences(clients);
             assert tasks.size() == taskSnapshot.size()
                     : "Restored task count must match snapshot.";
         } catch (VerityException exception) {
             throw new IllegalStateException(
                     "Could not restore the task list.", exception);
         }
+    }
+
+    private List<String> getClientSnapshot() {
+        List<String> clientSnapshot = new ArrayList<>();
+        clientSnapshot.add("NEXT_ID\t" + clients.getNextId());
+        clients.getClients().stream()
+                .map(client -> client.serialize())
+                .forEach(clientSnapshot::add);
+        return clientSnapshot;
+    }
+
+    private boolean isClientCommand(Command command) {
+        return command != null
+                && command.getClass().getSimpleName().startsWith("Client");
     }
 
     /**
@@ -148,10 +190,23 @@ public class Verity {
 
         isInitialized = true;
         try {
+            List<String> savedClientLines = clientStorage.loadClientLines();
+            clients = parser.parseSavedClients(savedClientLines);
+        } catch (IOException exception) {
+            initializationErrorMessage = ui.getLoadingErrorMessage();
+            return false;
+        } catch (VerityException exception) {
+            initializationErrorMessage =
+                    ui.getCorruptedClientDataErrorMessage(exception.getMessage());
+            return false;
+        }
+
+        try {
             List<String> savedTaskLines = storage.loadTaskLines();
             tasks = new TaskList(
                     parser.parseSavedTasks(savedTaskLines)
                             .toArray(Task[]::new));
+            tasks.validateClientReferences(clients);
             return true;
         } catch (IOException exception) {
             initializationErrorMessage = ui.getLoadingErrorMessage();
