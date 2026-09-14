@@ -28,6 +28,7 @@ public class Verity {
     private TaskList tasks;
     private ClientList clients;
     private boolean isInitialized;
+    private boolean isExitRequested;
     private String initializationErrorMessage;
     private String commandType;
 
@@ -54,6 +55,7 @@ public class Verity {
         this.tasks = new TaskList();
         this.clients = new ClientList();
         this.isInitialized = false;
+        this.isExitRequested = false;
         this.initializationErrorMessage = null;
         this.commandType = null;
     }
@@ -102,6 +104,7 @@ public class Verity {
      */
     public String getResponse(String input) {
         commandType = null;
+        isExitRequested = false;
         if (!initialize()) {
             return initializationErrorMessage;
         }
@@ -122,6 +125,7 @@ public class Verity {
         try {
             String response = command.execute(commandContext);
             commandType = command.getClass().getSimpleName();
+            isExitRequested = command.isExit();
             return response;
         } catch (VerityException exception) {
             restoreState(taskSnapshot, clientSnapshot);
@@ -142,6 +146,15 @@ public class Verity {
      */
     public String getCommandType() {
         return commandType;
+    }
+
+    /**
+     * Returns whether the most recently processed command requested exit.
+     *
+     * @return True if the most recent command was an exit command.
+     */
+    public boolean isExitRequested() {
+        return isExitRequested;
     }
 
     /**

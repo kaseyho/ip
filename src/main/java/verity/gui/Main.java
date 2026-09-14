@@ -6,8 +6,8 @@ import java.util.Objects;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import verity.Verity;
@@ -25,15 +25,15 @@ public class Main extends Application {
             FXMLLoader fxmlLoader = new FXMLLoader(Objects.requireNonNull(
                     Main.class.getResource("/view/MainWindow.fxml"),
                     "Missing MainWindow.fxml resource."));
-            AnchorPane mainLayout = fxmlLoader.load();
+            Parent mainLayout = fxmlLoader.load();
             MainWindow mainWindow = fxmlLoader.getController();
             mainWindow.setVerity(verity);
 
             stage.setScene(new Scene(mainLayout));
             stage.setTitle("Verity");
-            stage.setResizable(false);
-            stage.setMinHeight(220.0);
-            stage.setMinWidth(417.0);
+            stage.setResizable(true);
+            stage.setMinHeight(320.0);
+            stage.setMinWidth(360.0);
             stage.show();
         } catch (IOException | RuntimeException exception) {
             throw new IllegalStateException(

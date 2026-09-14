@@ -99,23 +99,23 @@ public class CommandContext {
      */
     private static class FileSnapshot {
         private final Path path;
-        private final boolean didExist;
+        private final boolean hasSnapshot;
         private final byte[] contents;
 
-        private FileSnapshot(Path path, boolean didExist, byte[] contents) {
+        private FileSnapshot(Path path, boolean hasSnapshot, byte[] contents) {
             this.path = path;
-            this.didExist = didExist;
+            this.hasSnapshot = hasSnapshot;
             this.contents = contents;
         }
 
         private static FileSnapshot capture(Path path) throws IOException {
-            boolean didExist = Files.exists(path);
-            byte[] contents = didExist ? Files.readAllBytes(path) : new byte[0];
-            return new FileSnapshot(path, didExist, contents);
+            boolean hasSnapshot = Files.exists(path);
+            byte[] contents = hasSnapshot ? Files.readAllBytes(path) : new byte[0];
+            return new FileSnapshot(path, hasSnapshot, contents);
         }
 
         private void restore() throws IOException {
-            if (!didExist) {
+            if (!hasSnapshot) {
                 Files.deleteIfExists(path);
                 return;
             }

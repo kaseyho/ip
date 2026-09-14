@@ -2,6 +2,7 @@ package verity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -131,6 +132,38 @@ class VerityTest {
         String response = verity.getResponse("unknown");
 
         assertTrue(response.contains("I don't know that command."));
+    }
+
+    @Test
+    void getResponse_invalidCommandAfterSuccess_clearsCommandType() {
+        Verity verity = new Verity(
+                temporaryDirectory.resolve("tasks.txt"));
+        verity.getResponse("list");
+
+        verity.getResponse("unknown");
+
+        assertNull(verity.getCommandType());
+    }
+
+    @Test
+    void getResponse_byeCommand_requestsExit() {
+        Verity verity = new Verity(
+                temporaryDirectory.resolve("tasks.txt"));
+
+        verity.getResponse("bye");
+
+        assertTrue(verity.isExitRequested());
+    }
+
+    @Test
+    void getResponse_nonExitCommandAfterBye_clearsExitRequest() {
+        Verity verity = new Verity(
+                temporaryDirectory.resolve("tasks.txt"));
+        verity.getResponse("bye");
+
+        verity.getResponse("list");
+
+        assertFalse(verity.isExitRequested());
     }
 
     @Test

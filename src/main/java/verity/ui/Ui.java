@@ -9,19 +9,23 @@ import verity.task.Task;
 import verity.task.TaskList;
 
 /**
- * Handles user input and formats user-facing responses.
+ * Handles console input and delegates user-facing response formatting.
  */
 public class Ui {
-    private static final String HORIZONTAL_LINE =
+    static final String HORIZONTAL_LINE =
             "____________________________________________________________\n";
 
     private final Scanner scanner;
+    private final TaskMessageFormatter taskMessageFormatter;
+    private final ClientMessageFormatter clientMessageFormatter;
 
     /**
      * Creates a UI that reads from standard input.
      */
     public Ui() {
         this.scanner = new Scanner(System.in);
+        this.taskMessageFormatter = new TaskMessageFormatter();
+        this.clientMessageFormatter = new ClientMessageFormatter();
     }
 
     /**
@@ -74,12 +78,7 @@ public class Ui {
      * @return Task-added response.
      */
     public String getTaskAddedMessage(Task task, int taskCount) {
-        return HORIZONTAL_LINE
-                + "     Got it. I've added this task:\n"
-                + "       " + task.getStatus() + "\n"
-                + "     Now you have " + taskCount
-                + " tasks in the list.\n"
-                + HORIZONTAL_LINE;
+        return taskMessageFormatter.getTaskAddedMessage(task, taskCount);
     }
 
     /**
@@ -89,11 +88,7 @@ public class Ui {
      * @return Task-marked response.
      */
     public String getTaskMarkedMessage(Task task) {
-        return HORIZONTAL_LINE
-                + "\n"
-                + "Nice! I've marked this task as done:\n\n"
-                + task.getStatus() + "\n"
-                + HORIZONTAL_LINE;
+        return taskMessageFormatter.getTaskMarkedMessage(task);
     }
 
     /**
@@ -103,11 +98,7 @@ public class Ui {
      * @return Task-unmarked response.
      */
     public String getTaskUnmarkedMessage(Task task) {
-        return HORIZONTAL_LINE
-                + "\n"
-                + "Ok, I've marked this task as not done yet:\n\n"
-                + task.getStatus() + "\n"
-                + HORIZONTAL_LINE;
+        return taskMessageFormatter.getTaskUnmarkedMessage(task);
     }
 
     /**
@@ -118,14 +109,7 @@ public class Ui {
      * @return Task-deleted response.
      */
     public String getTaskDeletedMessage(Task task, int taskCount) {
-        return HORIZONTAL_LINE
-                + "\n"
-                + "Noted. I've removed this task:\n\n"
-                + task.getStatus() + "\n"
-                + HORIZONTAL_LINE + "\n"
-                + "Now you have " + taskCount
-                + " tasks in the list.\n\n"
-                + HORIZONTAL_LINE;
+        return taskMessageFormatter.getTaskDeletedMessage(task, taskCount);
     }
 
     /**
@@ -135,21 +119,7 @@ public class Ui {
      * @return Formatted task-list response.
      */
     public String getTaskListMessage(TaskList taskList) {
-        StringBuilder response = new StringBuilder(HORIZONTAL_LINE)
-                .append("\n")
-                .append("    Here are the tasks in your list:\n\n");
-
-        for (int i = 0; i < taskList.size(); i++) {
-            Task task = taskList.get(i);
-            response.append("    ")
-                    .append(i + 1)
-                    .append(".")
-                    .append(task.getStatus())
-                    .append("\n");
-            appendTaskMetadata(response, task, "        ");
-        }
-
-        return response.append(HORIZONTAL_LINE).toString();
+        return taskMessageFormatter.getTaskListMessage(taskList);
     }
 
     /**
@@ -159,27 +129,8 @@ public class Ui {
      * @param matchingTasks Tasks occurring on the date.
      * @return Formatted date-search response.
      */
-    public String getTasksOnMessage(
-            LocalDate date, List<Task> matchingTasks) {
-        StringBuilder response = new StringBuilder(HORIZONTAL_LINE)
-                .append("\n")
-                .append("    Tasks on ")
-                .append(date)
-                .append(":\n\n");
-
-        for (Task task : matchingTasks) {
-            response.append("    ")
-                    .append(task.getStatus())
-                    .append("\n");
-            appendTaskMetadata(response, task, "        ");
-        }
-
-        if (matchingTasks.isEmpty()) {
-            response.append(
-                    "    There are no tasks on this date.\n");
-        }
-
-        return response.append(HORIZONTAL_LINE).toString();
+    public String getTasksOnMessage(LocalDate date, List<Task> matchingTasks) {
+        return taskMessageFormatter.getTasksOnMessage(date, matchingTasks);
     }
 
     /**
@@ -188,29 +139,8 @@ public class Ui {
      * @param matchingTasks Tasks matching the keyword.
      * @return Formatted keyword-search response.
      */
-    public String getMatchingTasksMessage(
-            List<Task> matchingTasks) {
-        StringBuilder response = new StringBuilder(HORIZONTAL_LINE)
-                .append("\n")
-                .append("    Here are the matching tasks "
-                        + "in your list:\n\n");
-
-        for (int i = 0; i < matchingTasks.size(); i++) {
-            Task task = matchingTasks.get(i);
-            response.append("    ")
-                    .append(i + 1)
-                    .append(".")
-                    .append(task.getStatus())
-                    .append("\n");
-            appendTaskMetadata(response, task, "        ");
-        }
-
-        if (matchingTasks.isEmpty()) {
-            response.append(
-                    "    There are no matching tasks.\n");
-        }
-
-        return response.append(HORIZONTAL_LINE).toString();
+    public String getMatchingTasksMessage(List<Task> matchingTasks) {
+        return taskMessageFormatter.getMatchingTasksMessage(matchingTasks);
     }
 
     /**
@@ -263,16 +193,13 @@ public class Ui {
     }
 
     /**
-     * Returns the response for a newly added client.
+     * Returns a response for a newly added client.
      *
      * @param client Added client.
      * @return Client-added response.
      */
     public String getClientAddedMessage(Client client) {
-        StringBuilder response = new StringBuilder(HORIZONTAL_LINE)
-                .append("    Client added:\n");
-        appendClientDetails(response, client, "    ");
-        return response.append(HORIZONTAL_LINE).toString();
+        return clientMessageFormatter.getClientAddedMessage(client);
     }
 
     /**
@@ -282,10 +209,7 @@ public class Ui {
      * @return Client-updated response.
      */
     public String getClientUpdatedMessage(Client client) {
-        StringBuilder response = new StringBuilder(HORIZONTAL_LINE)
-                .append("    Client updated:\n");
-        appendClientDetails(response, client, "    ");
-        return response.append(HORIZONTAL_LINE).toString();
+        return clientMessageFormatter.getClientUpdatedMessage(client);
     }
 
     /**
@@ -295,12 +219,7 @@ public class Ui {
      * @return Formatted client-list response.
      */
     public String getClientListMessage(List<Client> clients) {
-        if (clients.isEmpty()) {
-            return HORIZONTAL_LINE
-                    + "    There are no clients.\n"
-                    + HORIZONTAL_LINE;
-        }
-        return getClientCollectionMessage("    Clients:\n\n", clients);
+        return clientMessageFormatter.getClientListMessage(clients);
     }
 
     /**
@@ -311,27 +230,7 @@ public class Ui {
      * @return Formatted client-details response.
      */
     public String getClientDetailsMessage(Client client, TaskList tasks) {
-        StringBuilder response = new StringBuilder(HORIZONTAL_LINE)
-                .append("    Client details:\n");
-        appendClientDetails(response, client, "    ");
-        response.append("\n    Assigned tasks:\n");
-        boolean hasAssignedTask = false;
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            if (!task.hasClientId(client.getId())) {
-                continue;
-            }
-            hasAssignedTask = true;
-            response.append("      ")
-                    .append(i + 1)
-                    .append(".")
-                    .append(task.getStatus())
-                    .append("\n");
-        }
-        if (!hasAssignedTask) {
-            response.append("      None\n");
-        }
-        return response.append(HORIZONTAL_LINE).toString();
+        return clientMessageFormatter.getClientDetailsMessage(client, tasks);
     }
 
     /**
@@ -341,12 +240,7 @@ public class Ui {
      * @return Formatted search response.
      */
     public String getMatchingClientsMessage(List<Client> clients) {
-        if (clients.isEmpty()) {
-            return HORIZONTAL_LINE
-                    + "    There are no matching clients.\n"
-                    + HORIZONTAL_LINE;
-        }
-        return getClientCollectionMessage("    Matching clients:\n\n", clients);
+        return clientMessageFormatter.getMatchingClientsMessage(clients);
     }
 
     /**
@@ -359,18 +253,8 @@ public class Ui {
      */
     public String getClientAssociatedMessage(Client client, TaskList tasks,
             List<Integer> taskIndexes) {
-        StringBuilder response = new StringBuilder(HORIZONTAL_LINE)
-                .append("    Client ")
-                .append(client.getId())
-                .append(" was associated with:\n");
-        for (int taskIndex : taskIndexes) {
-            response.append("      ")
-                    .append(taskIndex + 1)
-                    .append(".")
-                    .append(tasks.get(taskIndex).getStatus())
-                    .append("\n");
-        }
-        return response.append(HORIZONTAL_LINE).toString();
+        return clientMessageFormatter.getClientAssociatedMessage(
+                client, tasks, taskIndexes);
     }
 
     /**
@@ -381,14 +265,7 @@ public class Ui {
      * @return Formatted dissociation response.
      */
     public String getClientDissociatedMessage(Client client, List<Integer> taskIndexes) {
-        String taskNumbers = taskIndexes.stream()
-                .map(taskIndex -> Integer.toString(taskIndex + 1))
-                .collect(java.util.stream.Collectors.joining(", "));
-        String noun = taskIndexes.size() == 1 ? "task " : "tasks ";
-        return HORIZONTAL_LINE
-                + "    Client " + client.getId() + " was dissociated from "
-                + noun + taskNumbers + ".\n"
-                + HORIZONTAL_LINE;
+        return clientMessageFormatter.getClientDissociatedMessage(client, taskIndexes);
     }
 
     /**
@@ -399,16 +276,8 @@ public class Ui {
      * @return Deletion-warning response.
      */
     public String getClientDeleteWarningMessage(Client client, int assignedTaskCount) {
-        String taskNoun = assignedTaskCount == 1 ? "task" : "tasks";
-        return HORIZONTAL_LINE
-                + "    Warning: Deleting client " + client.getId()
-                + " (" + client.getFullName() + ") is permanent.\n"
-                + "    The client is currently assigned to " + assignedTaskCount
-                + " " + taskNoun + ".\n"
-                + "    Those tasks will be kept and annotated.\n\n"
-                + "    Type `client delete " + client.getId()
-                + " confirm` to continue.\n"
-                + HORIZONTAL_LINE;
+        return clientMessageFormatter.getClientDeleteWarningMessage(
+                client, assignedTaskCount);
     }
 
     /**
@@ -419,14 +288,7 @@ public class Ui {
      * @return Client-deleted response.
      */
     public String getClientDeletedMessage(Client client, int affectedTaskCount) {
-        String taskNoun = affectedTaskCount == 1 ? "task" : "tasks";
-        return HORIZONTAL_LINE
-                + "    Client deleted:\n"
-                + "      " + client.getId() + " " + client.getFullName() + "\n\n"
-                + "    Removed the client from " + affectedTaskCount
-                + " " + taskNoun + ".\n"
-                + "    The affected tasks were kept and annotated.\n"
-                + HORIZONTAL_LINE;
+        return clientMessageFormatter.getClientDeletedMessage(client, affectedTaskCount);
     }
 
     /**
@@ -444,7 +306,7 @@ public class Ui {
     /**
      * Returns a response for corrupted client data.
      *
-     * @param message Description of the corrupted data.
+     * @param message Description of the corrupted client data.
      * @return Formatted corrupted-client-data response.
      */
     public String getCorruptedClientDataErrorMessage(String message) {
@@ -452,62 +314,5 @@ public class Ui {
                 + "     The saved client data is corrupted.\n"
                 + "     " + message + "\n"
                 + HORIZONTAL_LINE;
-    }
-
-    private String getClientCollectionMessage(String heading, List<Client> clients) {
-        StringBuilder response = new StringBuilder(HORIZONTAL_LINE).append(heading);
-        for (Client client : clients) {
-            response.append("    ").append(client.getId()).append("\n");
-            appendClientDetails(response, client, "      ", false);
-            response.append("\n");
-        }
-        response.append("    Total: ")
-                .append(clients.size())
-                .append(clients.size() == 1 ? " client.\n" : " clients.\n");
-        return response.append(HORIZONTAL_LINE).toString();
-    }
-
-    private void appendClientDetails(StringBuilder response, Client client, String indent) {
-        appendClientDetails(response, client, indent, true);
-    }
-
-    private void appendClientDetails(StringBuilder response, Client client,
-            String indent, boolean includeId) {
-        if (includeId) {
-            response.append(indent).append("ID: ").append(client.getId()).append("\n");
-        }
-        response.append(indent).append("Name: ").append(client.getFullName()).append("\n")
-                .append(indent).append("Phone: ").append(displayValue(client.getPhone())).append("\n")
-                .append(indent).append("Email: ").append(displayValue(client.getEmail())).append("\n")
-                .append(indent).append("Address: ").append(displayValue(client.getAddress())).append("\n")
-                .append(indent).append("Company: ").append(displayValue(client.getCompany())).append("\n")
-                .append(indent).append("Notes: ")
-                .append(displayMultilineValue(client.getNotes(), indent + "       "))
-                .append("\n")
-                .append(indent).append("Preferred contact: ")
-                .append(client.getPreferredContactMethod() == null
-                        ? "-"
-                        : client.getPreferredContactMethod().getValue())
-                .append("\n");
-    }
-
-    private String displayValue(String value) {
-        return value.isEmpty() ? "-" : value;
-    }
-
-    private String displayMultilineValue(String value, String continuationIndent) {
-        return displayValue(value).replace("\n", "\n" + continuationIndent);
-    }
-
-    private void appendTaskMetadata(StringBuilder response, Task task, String indent) {
-        if (!task.getClientIds().isEmpty()) {
-            response.append(indent)
-                    .append("Clients: ")
-                    .append(String.join(", ", task.getClientIds()))
-                    .append("\n");
-        }
-        for (String note : task.getFormerClientNotes()) {
-            response.append(indent).append("Note: ").append(note).append("\n");
-        }
     }
 }

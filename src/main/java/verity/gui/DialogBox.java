@@ -1,30 +1,46 @@
 package verity.gui;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Objects;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 /**
- * Represents a dialog box containing a message and speaker avatar.
+ * Represents one compact user command or Verity response.
  */
 public class DialogBox extends HBox {
+    private static final double AVATAR_SIZE = 99.0;
+    private static final double USER_MAXIMUM_WIDTH = 520.0;
+    private static final double USER_WIDTH_RATIO = 0.75;
+    private static final double VERITY_MAXIMUM_WIDTH = 680.0;
+    private static final double VERITY_WIDTH_RATIO = 0.92;
+    private static final Image VERITY_AVATAR = loadVerityAvatar();
+
+    @FXML
+    private Region leadingSpacer;
+    @FXML
+    private VBox messageContainer;
+    @FXML
+    private Label speakerLabel;
     @FXML
     private Label dialog;
     @FXML
+    private Region trailingSpacer;
+    @FXML
     private ImageView displayPicture;
 
-    private DialogBox(String text, Image image) {
+    private DialogBox(String text) {
         URL fxmlUrl = Objects.requireNonNull(
                 MainWindow.class.getResource("/view/DialogBox.fxml"),
                 "Missing DialogBox.fxml resource.");
@@ -35,7 +51,6 @@ public class DialogBox extends HBox {
         try {
             fxmlLoader.load();
             dialog.setText(text);
-            displayPicture.setImage(image);
         } catch (IOException | RuntimeException exception) {
             throw new IllegalStateException(
                     "Could not load DialogBox.fxml.", exception);
@@ -43,80 +58,92 @@ public class DialogBox extends HBox {
     }
 
     /**
-     * Returns a dialog box for a message written by the user.
+     * Returns a right-aligned command without an avatar or speaker label.
      *
-     * @param text User's message.
-     * @param image User's avatar.
-     * @return User dialog box.
+     * @param text User command.
+     * @return User command dialog box.
      */
-    public static DialogBox getUserDialog(
-            String text, Image image) {
-        return new DialogBox(text, image);
-    }
-
-    /**
-     * Returns a flipped dialog box for a response from Verity.
-     *
-     * @param text Verity's response.
-     * @param image Verity's avatar.
-     * @return Verity dialog box.
-     */
-    public static DialogBox getVerityDialog(
-            String text, Image image) {
-        return getVerityDialog(text, image, null);
-    }
-
-    /**
-     * Returns a flipped dialog box styled for the command that produced it.
-     *
-     * @param text Verity's response.
-     * @param image Verity's avatar.
-     * @param commandType Command that produced the response.
-     * @return Verity dialog box.
-     */
-    public static DialogBox getVerityDialog(
-            String text, Image image, String commandType) {
-        DialogBox dialogBox = new DialogBox(text, image);
-        dialogBox.flip();
-        dialogBox.changeDialogStyle(commandType);
+    public static DialogBox getUserDialog(String text) {
+        DialogBox dialogBox = new DialogBox(text);
+        dialogBox.configureUserDialog();
         return dialogBox;
     }
 
     /**
-     * Places the avatar on the left and the message on the right.
+     * Returns a left-aligned Verity response with semantic error styling.
+     *
+     * @param text Verity response.
+     * @param isError Whether the response reports an error.
+     * @return Verity response dialog box.
      */
-    private void flip() {
-        setAlignment(Pos.TOP_LEFT);
-        ObservableList<Node> children =
-                FXCollections.observableArrayList(getChildren());
-        FXCollections.reverse(children);
-        getChildren().setAll(children);
-        dialog.getStyleClass().add("reply-label");
+    public static DialogBox getVerityDialog(String text, boolean isError) {
+        DialogBox dialogBox = new DialogBox(text);
+        dialogBox.configureVerityDialog(isError);
+        return dialogBox;
     }
 
-    /**
-     * Applies a response color based on the command that produced it.
-     *
-     * @param commandType Command type used to select the response style.
-     */
-    private void changeDialogStyle(String commandType) {
-        if (commandType == null) {
-            return;
-        }
+    private void configureUserDialog() {
+        setAlignment(Pos.TOP_RIGHT);
+        getStyleClass().add("user-dialog");
+        leadingSpacer.setManaged(true);
+        leadingSpacer.setVisible(true);
+        trailingSpacer.setManaged(false);
+        trailingSpacer.setVisible(false);
+        speakerLabel.setManaged(false);
+        speakerLabel.setVisible(false);
+        displayPicture.setManaged(false);
+        displayPicture.setVisible(false);
+        messageContainer.getStyleClass().add("user-message-container");
+        dialog.getStyleClass().add("user-message");
+        bindMaximumMessageWidth(USER_WIDTH_RATIO, USER_MAXIMUM_WIDTH);
+    }
 
-        switch (commandType) {
-        case "AddCommand":
-            dialog.getStyleClass().add("add-label");
-            break;
-        case "MarkCommand":
-            dialog.getStyleClass().add("marked-label");
-            break;
-        case "DeleteCommand":
-            dialog.getStyleClass().add("delete-label");
-            break;
-        default:
-            // Do nothing for commands without a dedicated response style.
-            break;
+    private void configureVerityDialog(boolean isError) {
+        setAlignment(Pos.TOP_LEFT);
+        getStyleClass().add("verity-dialog");
+        leadingSpacer.setManaged(false);
+        leadingSpacer.setVisible(false);
+        trailingSpacer.setManaged(true);
+        trailingSpacer.setVisible(true);
+        configureAvatar();
+        messageContainer.getStyleClass().add("verity-message-container");
+        dialog.getStyleClass().add("verity-message");
+        bindMaximumMessageWidth(VERITY_WIDTH_RATIO, VERITY_MAXIMUM_WIDTH);
+
+        if (isError) {
+            speakerLabel.setText("VERITY · ACTION NEEDED");
+            messageContainer.getStyleClass().add("error-message-container");
+            speakerLabel.getStyleClass().add("error-speaker");
+            dialog.getStyleClass().add("error-message");
         }
+    }
+
+    private void bindMaximumMessageWidth(double widthRatio, double maximumWidth) {
+        messageContainer.maxWidthProperty().bind(Bindings.createDoubleBinding(
+                () -> Math.min(getWidth() * widthRatio, maximumWidth),
+                widthProperty()));
+    }
+
+    private void configureAvatar() {
+        displayPicture.setManaged(true);
+        displayPicture.setVisible(true);
+        displayPicture.setImage(VERITY_AVATAR);
+        displayPicture.setFitWidth(AVATAR_SIZE);
+        displayPicture.setFitHeight(AVATAR_SIZE);
+        displayPicture.setPreserveRatio(true);
+        displayPicture.getStyleClass().add("verity-avatar");
+    }
+
+    private static Image loadVerityAvatar() {
+        InputStream imageStream = Objects.requireNonNull(
+                DialogBox.class.getResourceAsStream(
+                        "/images/verity_bot.png"),
+                "Missing Verity avatar resource.");
+        Image image = new Image(imageStream);
+        if (image.isError()) {
+            throw new IllegalStateException(
+                    "Invalid Verity avatar resource.", image.getException());
+        }
+        return image;
     }
 }

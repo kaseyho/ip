@@ -11,14 +11,14 @@ import org.junit.jupiter.api.Test;
 class MainTest {
 
     @Test
-    void imageResources_applicationStarts_resourcesAreAvailable() {
+    void stylesheetResources_arePackagedWithApplication() {
         assertAll(
                 () -> assertNotNull(
                         Main.class.getResource(
-                                "/images/verity_user.png")),
+                                "/css/main.css")),
                 () -> assertNotNull(
                         Main.class.getResource(
-                                "/images/verity_bot.png"))
+                                "/css/dialog-box.css"))
         );
     }
 
@@ -32,5 +32,10 @@ class MainTest {
                         Main.class.getResource(
                                 "/view/DialogBox.fxml"))
         );
+    }
+
+    @Test
+    void verityAvatar_isPackagedWithApplication() {
+        assertNotNull(Main.class.getResource("/images/verity_bot.png"));
     }
 }
