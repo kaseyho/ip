@@ -1,45 +1,52 @@
 package verity.gui;
 
-import java.io.InputStream;
 import java.util.Objects;
 
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import verity.Verity;
 
 /**
- * Controller for the main Verity GUI window.
+ * Controls the main Verity GUI window.
  */
-public class MainWindow extends AnchorPane {
+public class MainWindow {
+    private static final Duration EXIT_DELAY = Duration.millis(750);
+
     @FXML
     private ScrollPane scrollPane;
     @FXML
     private VBox dialogContainer;
     @FXML
+    private VBox emptyState;
+    @FXML
     private TextField userInput;
     @FXML
     private Button sendButton;
 
-    private final Image userImage = loadImage(
-            "/images/verity_user.png", "Missing user avatar resource.");
-    private final Image verityImage = loadImage(
-            "/images/verity_bot.png", "Missing Verity avatar resource.");
-
+    private final BooleanProperty isClosing = new SimpleBooleanProperty(false);
     private Verity verity;
 
     /**
-     * Configures the window to keep the latest dialog visible.
+     * Configures input validation and window controls after FXML loading.
      */
     @FXML
     public void initialize() {
-        scrollPane.vvalueProperty().bind(
-                dialogContainer.heightProperty());
+        BooleanBinding isBlankInput = Bindings.createBooleanBinding(
+                () -> userInput.getText().isBlank(),
+                userInput.textProperty());
+        sendButton.disableProperty().bind(isBlankInput.or(isClosing));
+        userInput.disableProperty().bind(isClosing);
     }
 
     /**
@@ -58,52 +65,46 @@ public class MainWindow extends AnchorPane {
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();
+        if (isClosing.get() || input.isBlank()) {
+            return;
+        }
+
         String response = verity.getResponse(input);
         String commandType = verity.getCommandType();
-        String guiResponse = formatResponseForGui(response);
+        boolean isError = isErrorResponse(commandType);
 
+        hideEmptyState();
         dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(input, userImage),
+                DialogBox.getUserDialog(input),
                 DialogBox.getVerityDialog(
-                        guiResponse, verityImage, commandType));
+                        formatResponseForGui(response), isError));
+        Platform.runLater(() -> scrollPane.setVvalue(1.0));
+
         userInput.clear();
+        userInput.requestFocus();
+
+        if (verity.isExitRequested()) {
+            closeAfterFarewell();
+        }
     }
 
-    /**
-     * Removes console-only separator lines before displaying a response in
-     * the graphical interface.
-     *
-     * @param response Response formatted by the shared UI.
-     * @return Response without ASCII separator lines or outer whitespace.
-     */
-    private static String formatResponseForGui(String response) {
+    static boolean isErrorResponse(String commandType) {
+        return commandType == null;
+    }
+
+    static String formatResponseForGui(String response) {
         return response.replaceAll("(?m)^_+\\R", "").trim();
     }
 
-    /**
-     * Loads an image resource and reports a descriptive error if it is absent
-     * or malformed.
-     *
-     * @param resourcePath Classpath path of the image.
-     * @param errorMessage Error message for a missing image.
-     * @return Loaded image.
-     */
-    private static Image loadImage(
-            String resourcePath, String errorMessage) {
-        InputStream imageStream = Objects.requireNonNull(
-                MainWindow.class.getResourceAsStream(resourcePath),
-                errorMessage);
-        Image image = new Image(imageStream);
-        if (image.isError()) {
-            Throwable cause = image.getException();
-            String causeMessage = cause == null
-                    ? ""
-                    : " " + cause;
-            throw new IllegalStateException(
-                    "Invalid image resource " + resourcePath + "."
-                            + causeMessage,
-                    cause);
-        }
-        return image;
+    private void hideEmptyState() {
+        emptyState.setVisible(false);
+        emptyState.setManaged(false);
+    }
+
+    private void closeAfterFarewell() {
+        isClosing.set(true);
+        PauseTransition exitDelay = new PauseTransition(EXIT_DELAY);
+        exitDelay.setOnFinished(event -> Platform.exit());
+        exitDelay.play();
     }
 }
