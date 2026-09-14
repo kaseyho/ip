@@ -446,4 +446,91 @@ class ParserTest {
                 "A task command accepts exactly one task number.",
                 exception.getMessage());
     }
+
+    @Test
+    void parse_nonNumericTaskNumber_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("mark one", 1));
+
+        assertEquals("The task number must be a number.", exception.getMessage());
+    }
+
+    @Test
+    void parse_deadlineWithMissingArguments_throwsHelpfulException() {
+        assertParseFailure(
+                "deadline /by 2026-08-10",
+                "The description of a deadline cannot be empty.");
+        assertParseFailure(
+                "deadline submit report",
+                "A deadline must include a /by date.");
+        assertParseFailure(
+                "deadline submit report /by",
+                "The deadline date cannot be empty.");
+    }
+
+    @Test
+    void parse_deadlineWithInvalidClientPlacement_throwsHelpfulException() {
+        assertParseFailure(
+                "deadline report /client C001 /by 2026-08-10",
+                "Client markers must follow the deadline date.");
+        assertParseFailure(
+                "deadline report /by /client C001",
+                "The deadline date cannot be empty.");
+    }
+
+    @Test
+    void parse_eventWithMissingArguments_throwsHelpfulException() {
+        assertParseFailure(
+                "event /from 2026-08-10 /to 2026-08-11",
+                "The description of an event cannot be empty.");
+        assertParseFailure(
+                "event meeting",
+                "An event must include a /from date and a /to date.");
+        assertParseFailure(
+                "event meeting /from /to 2026-08-11",
+                "The event's from date cannot be empty.");
+        assertParseFailure(
+                "event meeting /from 2026-08-10",
+                "An event must include a /to date.");
+        assertParseFailure(
+                "event meeting /from 2026-08-10 /to",
+                "The event's to date cannot be empty.");
+    }
+
+    @Test
+    void parse_eventWithInvalidClientPlacement_throwsHelpfulException() {
+        assertParseFailure(
+                "event meeting /from 2026-08-10 /client C001 /to 2026-08-11",
+                "Client markers must follow the event end date.");
+        assertParseFailure(
+                "event meeting /from 2026-08-10 /to /client C001",
+                "The event's to date cannot be empty.");
+    }
+
+    @Test
+    void parse_findDateWithMissingOrExtraArguments_throwsHelpfulException() {
+        String expectedMessage =
+                "Use finddate followed by a date in yyyy-MM-dd format.";
+        assertParseFailure("finddate", expectedMessage);
+        assertParseFailure("finddate 2026-08-10 extra", expectedMessage);
+    }
+
+    @Test
+    void parse_clientAssociationWithMalformedSequence_throwsHelpfulException() {
+        assertParseFailure(
+                "todo invoice /client C001 unexpected",
+                "Use /client followed by one client ID.");
+        assertParseFailure(
+                "todo invoice /client",
+                "The /client value cannot be empty.");
+    }
+
+    private void assertParseFailure(String command, String expectedMessage) {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse(command, 2));
+
+        assertEquals(expectedMessage, exception.getMessage());
+    }
 }

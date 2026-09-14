@@ -2,9 +2,11 @@ package verity.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -76,5 +78,26 @@ class DeadlineTest {
         Deadline deadline = new Deadline("submit report", DEADLINE_DATE);
 
         assertFalse(deadline.occursOn(LocalDate.of(2026, 8, 11)));
+    }
+
+    @Test
+    void constructor_nullDate_throwsAssertionError() {
+        assertThrows(
+                AssertionError.class,
+                () -> new Deadline("submit report", null));
+    }
+
+    @Test
+    void getStatus_nonEnglishDefaultLocale_keepsEnglishDateFormat() {
+        Locale originalLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.CHINA);
+
+            assertEquals(
+                    "[D][ ] submit report (by: Aug 10 2026)",
+                    new Deadline("submit report", DEADLINE_DATE).getStatus());
+        } finally {
+            Locale.setDefault(originalLocale);
+        }
     }
 }

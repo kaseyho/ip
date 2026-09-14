@@ -168,4 +168,42 @@ class TaskListTest {
                 VerityException.class,
                 () -> tasks.validateClientReferences(new ClientList()));
     }
+
+    @Test
+    void validateClientReferences_existingClient_returnsNormally()
+            throws VerityException {
+        ClientList clients = new ClientList();
+        clients.addNewClient("Alice Tan", "", "", "", "", "", null);
+        Todo todo = new Todo("task");
+        todo.addClientId("C001");
+
+        new TaskList(todo).validateClientReferences(clients);
+    }
+
+    @Test
+    void constructor_nullArrayOrTask_throwsAssertionError() {
+        assertThrows(
+                AssertionError.class,
+                () -> new TaskList((Task[]) null));
+        assertThrows(
+                AssertionError.class,
+                () -> new TaskList((Task) null));
+    }
+
+    @Test
+    void add_nullTask_throwsAssertionError() {
+        TaskList tasks = new TaskList();
+
+        assertThrows(AssertionError.class, () -> tasks.add(null));
+    }
+
+    @Test
+    void indexedOperations_invalidIndex_throwAssertionError() {
+        TaskList tasks = new TaskList(new Todo("task"));
+
+        assertThrows(AssertionError.class, () -> tasks.get(-1));
+        assertThrows(AssertionError.class, () -> tasks.delete(1));
+        assertThrows(AssertionError.class, () -> tasks.mark(1));
+        assertThrows(AssertionError.class, () -> tasks.unmark(-1));
+    }
 }

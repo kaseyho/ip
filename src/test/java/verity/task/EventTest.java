@@ -109,4 +109,14 @@ class EventTest {
                 "The event end date cannot be before the start date.",
                 exception.getMessage());
     }
+
+    @Test
+    void constructor_nullDates_throwAssertionError() {
+        assertThrows(
+                AssertionError.class,
+                () -> new Event("meeting", null, END_DATE));
+        assertThrows(
+                AssertionError.class,
+                () -> new Event("meeting", START_DATE, null));
+    }
 }

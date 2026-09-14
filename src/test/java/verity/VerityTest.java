@@ -275,6 +275,49 @@ class VerityTest {
     }
 
     @Test
+    void getResponse_unreadableTaskPath_returnsTaskLoadingMessage()
+            throws IOException {
+        Path taskPath = temporaryDirectory.resolve("task-directory");
+        Files.createDirectory(taskPath);
+
+        String response = new Verity(taskPath).getResponse("list");
+
+        assertTrue(response.contains("I could not load your saved tasks."));
+    }
+
+    @Test
+    void getResponse_taskReferencesMissingClient_returnsCorruptionMessage()
+            throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(
+                taskFile,
+                "T\t0\tinvoice\tC001\t" + System.lineSeparator(),
+                StandardCharsets.UTF_8);
+
+        String response = new Verity(taskFile).getResponse("list");
+
+        assertTrue(response.contains("The saved task data is corrupted."));
+        assertTrue(response.contains("unknown client ID 'C001'."));
+    }
+
+    @Test
+    void getResponse_clientSavingFailure_restoresClientAndShowsChangesError()
+            throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Path blockingParent = temporaryDirectory.resolve("blocked-client-parent");
+        Files.writeString(blockingParent, "not a directory");
+        Verity verity = new Verity(
+                taskFile, blockingParent.resolve("clients.txt"));
+
+        String errorResponse = verity.getResponse(
+                "client add /name Alice Tan");
+        String listResponse = verity.getResponse("client list");
+
+        assertTrue(errorResponse.contains("I could not save your changes."));
+        assertTrue(listResponse.contains("There are no clients."));
+    }
+
+    @Test
     void getResponse_repairedTaskFile_retriesInitialization()
             throws IOException {
         Path taskFile = temporaryDirectory.resolve("tasks.txt");

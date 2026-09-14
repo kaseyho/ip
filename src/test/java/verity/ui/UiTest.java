@@ -226,4 +226,86 @@ class UiTest {
         assertTrue(response.contains(
                 "Note: Former client Bob Lee (C002) was deleted."));
     }
+
+    @Test
+    void getClientCollectionMessages_emptyCollections_returnEmptyMessages() {
+        Ui ui = new Ui();
+
+        assertTrue(ui.getClientListMessage(List.of()).contains(
+                "There are no clients."));
+        assertTrue(ui.getMatchingClientsMessage(List.of()).contains(
+                "There are no matching clients."));
+    }
+
+    @Test
+    void getMatchingClientsMessage_multipleClients_returnsPluralTotal()
+            throws VerityException {
+        Client first = createClient(1, "Alice Tan");
+        Client second = createClient(2, "Bob Lee");
+
+        String response = new Ui().getMatchingClientsMessage(
+                List.of(first, second));
+
+        assertTrue(response.contains("Matching clients:"));
+        assertTrue(response.contains("Total: 2 clients."));
+    }
+
+    @Test
+    void getClientDetailsMessage_withAndWithoutAssignment_listsExpectedTasks()
+            throws VerityException {
+        Client client = createClient(1, "Alice Tan");
+        Todo unrelatedTask = new Todo("unrelated");
+        Todo assignedTask = new Todo("assigned");
+        assignedTask.addClientId(client.getId());
+        Ui ui = new Ui();
+
+        String assignedResponse = ui.getClientDetailsMessage(
+                client, new TaskList(unrelatedTask, assignedTask));
+        String emptyResponse = ui.getClientDetailsMessage(
+                client, new TaskList(unrelatedTask));
+
+        assertTrue(assignedResponse.contains("2.[T][ ] assigned"));
+        assertTrue(emptyResponse.contains("Assigned tasks:\n      None"));
+    }
+
+    @Test
+    void getClientChangeMessages_returnExpectedSingularAndPluralWording()
+            throws VerityException {
+        Client client = createClient(1, "Alice Tan");
+        Ui ui = new Ui();
+
+        String added = ui.getClientAddedMessage(client);
+        String updated = ui.getClientUpdatedMessage(client);
+        String singularDissociation = ui.getClientDissociatedMessage(
+                client, List.of(0));
+        String pluralDissociation = ui.getClientDissociatedMessage(
+                client, List.of(0, 2));
+        String singularWarning = ui.getClientDeleteWarningMessage(client, 1);
+        String pluralWarning = ui.getClientDeleteWarningMessage(client, 2);
+        String singularDeletion = ui.getClientDeletedMessage(client, 1);
+        String pluralDeletion = ui.getClientDeletedMessage(client, 2);
+
+        assertTrue(added.contains("Client added:"));
+        assertTrue(updated.contains("Client updated:"));
+        assertTrue(singularDissociation.contains("from task 1."));
+        assertTrue(pluralDissociation.contains("from tasks 1, 3."));
+        assertTrue(singularWarning.contains("assigned to 1 task."));
+        assertTrue(pluralWarning.contains("assigned to 2 tasks."));
+        assertTrue(singularDeletion.contains("from 1 task."));
+        assertTrue(pluralDeletion.contains("from 2 tasks."));
+    }
+
+    @Test
+    void clientPersistenceErrorMessages_returnExpectedDetails() {
+        Ui ui = new Ui();
+
+        assertTrue(ui.getSavingChangesErrorMessage().contains(
+                "I could not save your changes."));
+        assertTrue(ui.getCorruptedClientDataErrorMessage("Line 2 invalid.").contains(
+                "The saved client data is corrupted.\n     Line 2 invalid."));
+    }
+
+    private Client createClient(int id, String name) throws VerityException {
+        return new Client(id, name, "", "", "", "", "", null);
+    }
 }
