@@ -171,6 +171,7 @@ class UiTest {
         String commandError =
                 ui.getCommandErrorMessage("invalid command");
         String loadingError = ui.getLoadingErrorMessage();
+        String clientLoadingError = ui.getClientLoadingErrorMessage();
         String corruptedDataError =
                 ui.getCorruptedDataErrorMessage("Line 1 is invalid.");
         String savingError = ui.getSavingErrorMessage();
@@ -180,6 +181,8 @@ class UiTest {
         assertTrue(commandError.contains("Stay with me and try again."));
         assertTrue(loadingError.contains(
                 "I could not load your saved tasks."));
+        assertTrue(clientLoadingError.contains(
+                "I could not load your saved clients."));
         assertTrue(corruptedDataError.contains(
                 "The saved task data is corrupted."));
         assertTrue(corruptedDataError.contains("Line 1 is invalid."));

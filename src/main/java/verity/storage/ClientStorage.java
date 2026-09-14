@@ -58,10 +58,6 @@ public class ClientStorage {
     }
 
     private void writeToFile(String contents) throws IOException {
-        Path parentDirectory = dataFilePath.getParent();
-        if (parentDirectory != null) {
-            Files.createDirectories(parentDirectory);
-        }
-        Files.writeString(dataFilePath, contents, StandardCharsets.UTF_8);
+        AtomicFileWriter.write(dataFilePath, contents);
     }
 }

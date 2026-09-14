@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import verity.client.ClientList;
 import verity.command.Command;
@@ -66,33 +67,14 @@ public class Verity {
     public void run() {
         System.out.println(ui.getGreeting());
 
-        if (!initialize()) {
-            System.out.println(initializationErrorMessage);
-            return;
-        }
-
-        CommandContext commandContext =
-                new CommandContext(tasks, clients, ui, storage, clientStorage);
-
-        boolean isExit = false;
-        while (!isExit) {
-            Command command = null;
+        while (!isExitRequested) {
+            String fullCommand;
             try {
-                String fullCommand = ui.readCommand();
-                command = parser.parse(fullCommand, tasks.size());
-                String response = command.execute(commandContext);
-
-                System.out.println(response);
-                isExit = command.isExit();
-            } catch (VerityException exception) {
-                System.out.println(ui.getCommandErrorMessage(
-                        exception.getMessage()));
-            } catch (IOException exception) {
-                System.out.println(isClientCommand(command)
-                        ? ui.getSavingChangesErrorMessage()
-                        : ui.getSavingErrorMessage());
+                fullCommand = ui.readCommand();
+            } catch (NoSuchElementException exception) {
                 return;
             }
+            System.out.println(getResponse(fullCommand));
         }
     }
 
@@ -158,9 +140,10 @@ public class Verity {
     }
 
     /**
-     * Restores the in-memory task list after a command fails to save.
+     * Restores the in-memory task and client data after a command fails.
      *
      * @param taskSnapshot Serialized tasks from before command execution.
+     * @param clientSnapshot Serialized clients from before command execution.
      */
     private void restoreState(List<String> taskSnapshot, List<String> clientSnapshot) {
         try {
@@ -198,15 +181,16 @@ public class Verity {
      */
     private boolean initialize() {
         if (isInitialized) {
-            return initializationErrorMessage == null;
+            return true;
         }
 
-        isInitialized = true;
+        initializationErrorMessage = null;
+        ClientList loadedClients;
         try {
             List<String> savedClientLines = clientStorage.loadClientLines();
-            clients = parser.parseSavedClients(savedClientLines);
+            loadedClients = parser.parseSavedClients(savedClientLines);
         } catch (IOException exception) {
-            initializationErrorMessage = ui.getLoadingErrorMessage();
+            initializationErrorMessage = ui.getClientLoadingErrorMessage();
             return false;
         } catch (VerityException exception) {
             initializationErrorMessage =
@@ -214,13 +198,13 @@ public class Verity {
             return false;
         }
 
+        TaskList loadedTasks;
         try {
             List<String> savedTaskLines = storage.loadTaskLines();
-            tasks = new TaskList(
+            loadedTasks = new TaskList(
                     parser.parseSavedTasks(savedTaskLines)
                             .toArray(Task[]::new));
-            tasks.validateClientReferences(clients);
-            return true;
+            loadedTasks.validateClientReferences(loadedClients);
         } catch (IOException exception) {
             initializationErrorMessage = ui.getLoadingErrorMessage();
             return false;
@@ -230,6 +214,11 @@ public class Verity {
                             exception.getMessage());
             return false;
         }
+
+        clients = loadedClients;
+        tasks = loadedTasks;
+        isInitialized = true;
+        return true;
     }
 
     /**

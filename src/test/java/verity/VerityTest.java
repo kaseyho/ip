@@ -60,6 +60,28 @@ class VerityTest {
     }
 
     @Test
+    void run_closedInput_exitsWithoutFailure() {
+        String output = runWithInput(
+                temporaryDirectory.resolve("tasks.txt"), "");
+
+        assertTrue(output.contains("Hello! I'm Verity."));
+    }
+
+    @Test
+    void run_savingFailure_showsErrorAndContinues() throws IOException {
+        Path dataDirectory = temporaryDirectory.resolve("blocked-data");
+        Files.writeString(dataDirectory, "not a directory");
+
+        String output = runWithInput(
+                dataDirectory.resolve("tasks.txt"),
+                "todo phantom\nlist\nbye\n");
+
+        assertTrue(output.contains("I could not save your tasks."));
+        assertFalse(output.contains("1.[T][ ] phantom"));
+        assertTrue(output.contains("Bye. Hope to see you again soon!"));
+    }
+
+    @Test
     void run_findCommands_displayKeywordAndDateMatches() throws IOException {
         Path dataFile = temporaryDirectory.resolve("tasks.txt");
         Files.writeString(
@@ -238,6 +260,36 @@ class VerityTest {
         String response = new Verity(taskFile, clientFile).getResponse("list");
 
         assertTrue(response.contains("The saved client data is corrupted."));
+    }
+
+    @Test
+    void getResponse_unreadableClientPath_returnsClientLoadingMessage()
+            throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Path clientPath = temporaryDirectory.resolve("client-directory");
+        Files.createDirectory(clientPath);
+
+        String response = new Verity(taskFile, clientPath).getResponse("list");
+
+        assertTrue(response.contains("I could not load your saved clients."));
+    }
+
+    @Test
+    void getResponse_repairedTaskFile_retriesInitialization()
+            throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(taskFile, "X\t0\tinvalid" + System.lineSeparator());
+        Verity verity = new Verity(taskFile);
+
+        String errorResponse = verity.getResponse("list");
+        Files.writeString(
+                taskFile,
+                "T\t0\tread book" + System.lineSeparator(),
+                StandardCharsets.UTF_8);
+        String recoveredResponse = verity.getResponse("list");
+
+        assertTrue(errorResponse.contains("The saved task data is corrupted."));
+        assertTrue(recoveredResponse.contains("1.[T][ ] read book"));
     }
 
     @Test

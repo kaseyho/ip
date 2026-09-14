@@ -104,4 +104,19 @@ class StorageTest {
                 IOException.class,
                 () -> storage.saveTasks(new TaskList()));
     }
+
+    @Test
+    void saveTasks_destinationIsDirectory_preservesDirectoryContents()
+            throws IOException {
+        Path destination = temporaryDirectory.resolve("tasks.txt");
+        Files.createDirectory(destination);
+        Path existingFile = destination.resolve("existing.txt");
+        Files.writeString(existingFile, "keep", StandardCharsets.UTF_8);
+        Storage storage = new Storage(destination);
+
+        assertThrows(
+                IOException.class,
+                () -> storage.saveTasks(new TaskList(new Todo("read book"))));
+        assertEquals("keep", Files.readString(existingFile, StandardCharsets.UTF_8));
+    }
 }

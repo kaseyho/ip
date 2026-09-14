@@ -169,6 +169,87 @@ class ParserTest {
     }
 
     @Test
+    void parse_blankCommand_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("   ", 0));
+
+        assertEquals("Please enter a command.", exception.getMessage());
+    }
+
+    @Test
+    void parse_taskCommandWithFlexibleSpacing_returnsCommand()
+            throws VerityException {
+        Command command = parser.parse("  todo   read   book  ", 0);
+
+        assertInstanceOf(AddCommand.class, command);
+    }
+
+    @Test
+    void parse_taskCommandWithUnknownMarker_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("todo read book /due 2026-08-10", 0));
+
+        assertEquals("Unknown task marker '/due'.", exception.getMessage());
+    }
+
+    @Test
+    void parse_todoWithDateMarker_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("todo read book /by 2026-08-10", 0));
+
+        assertEquals(
+                "The /by marker is not valid for a todo command.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_deadlineWithRepeatedDateMarker_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse(
+                        "deadline report /by 2026-08-10 /by 2026-08-11", 0));
+
+        assertEquals("The /by marker cannot be repeated.", exception.getMessage());
+    }
+
+    @Test
+    void parse_eventWithRepeatedDateMarker_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse(
+                        "event meeting /from 2026-08-10 /to 2026-08-11"
+                                + " /to 2026-08-12",
+                        0));
+
+        assertEquals("The /to marker cannot be repeated.", exception.getMessage());
+    }
+
+    @Test
+    void parse_eventWithReversedMarkers_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse(
+                        "event meeting /to 2026-08-11 /from 2026-08-10", 0));
+
+        assertEquals(
+                "The /from marker must come before the /to marker.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_repeatedClientMarkerWithoutFirstId_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse(
+                        "todo prepare invoice /client /client C001", 0));
+
+        assertEquals("The /client value cannot be empty.", exception.getMessage());
+    }
+
+    @Test
     void parse_invalidTaskNumber_throwsVerityException() {
         VerityException exception = assertThrows(
                 VerityException.class,
@@ -204,6 +285,18 @@ class ParserTest {
                 VerityException.class,
                 () -> parser.parse(
                         "deadline submit report /by 10-08-2026", 0));
+
+        assertEquals(
+                "Dates must use the format yyyy-MM-dd.",
+                exception.getMessage());
+    }
+
+    @Test
+    void parse_nonexistentDeadlineDate_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse(
+                        "deadline submit report /by 2026-02-30", 0));
 
         assertEquals(
                 "Dates must use the format yyyy-MM-dd.",

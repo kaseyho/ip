@@ -67,10 +67,6 @@ public class Storage {
      * @throws IOException If the directory or file cannot be written.
      */
     private void writeToFile(String fileContents) throws IOException {
-        Path parentDirectory = dataFilePath.getParent();
-        if (parentDirectory != null) {
-            Files.createDirectories(parentDirectory);
-        }
-        Files.writeString(dataFilePath, fileContents, StandardCharsets.UTF_8);
+        AtomicFileWriter.write(dataFilePath, fileContents);
     }
 }

@@ -3,6 +3,23 @@
 Verity manages tasks and client contact information through text commands. A
 task can have no clients, one client, or multiple clients.
 
+## Error handling
+
+Verity accepts extra spacing between parts of ordinary task commands. A blank
+command, unknown slash-prefixed task marker, repeated date marker, misplaced
+date marker, missing value, or invalid task or client number produces an error
+message without closing the application.
+
+Dates must use `yyyy-MM-dd` and must exist on the calendar. An event's end date
+cannot be before its start date; a same-day event remains valid.
+
+Missing data files are treated as empty first-run data. If an existing task or
+client file cannot be read or contains invalid data, Verity identifies the data
+that could not be loaded and does not overwrite it. After the file is repaired,
+the next command retries loading it. Saves are written to a temporary file
+before the destination is replaced. If a save fails, Verity reports the error,
+restores its in-memory data, and continues accepting commands.
+
 ## Adding a client
 
 Use `client add` with a required `/name` field and any optional fields:

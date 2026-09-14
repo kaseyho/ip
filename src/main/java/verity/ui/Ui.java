@@ -169,6 +169,18 @@ public class Ui {
     }
 
     /**
+     * Returns the client-loading-error response.
+     *
+     * @return Formatted client-loading-error response.
+     */
+    public String getClientLoadingErrorMessage() {
+        return HORIZONTAL_LINE
+                + "     I could not load your saved clients.\n"
+                + "     Please check the data file and try again.\n"
+                + HORIZONTAL_LINE;
+    }
+
+    /**
      * Returns a response for corrupted saved data.
      *
      * @param message Description of the corrupted data.

@@ -63,6 +63,10 @@ public class Parser {
         assert fullCommand != null : "Command text must not be null";
         assert taskCount >= 0 : "Task count must not be negative.";
 
+        if (fullCommand.isBlank()) {
+            throw new VerityException("Please enter a command.");
+        }
+
         String[] commandParts = fullCommand.trim().split("\\s+");
         String commandWord =
                 commandParts[0].toLowerCase(Locale.ROOT);
@@ -82,12 +86,24 @@ public class Parser {
                     parseTaskNumber(commandParts, taskCount));
             case COMMAND_DELETE -> new DeleteCommand(
                     parseTaskNumber(commandParts, taskCount));
-            case COMMAND_TODO -> new AddCommand(
-                    parseTodo(commandParts));
-            case COMMAND_DEADLINE -> new AddCommand(
-                    parseDeadline(commandParts));
-            case COMMAND_EVENT -> new AddCommand(
-                    parseEvent(commandParts));
+            case COMMAND_TODO -> {
+                validateTaskMarkers(
+                        commandParts, COMMAND_TODO, TASK_CLIENT_MARKER);
+                yield new AddCommand(parseTodo(commandParts));
+            }
+            case COMMAND_DEADLINE -> {
+                validateTaskMarkers(
+                        commandParts, COMMAND_DEADLINE,
+                        DEADLINE_DATE_MARKER, TASK_CLIENT_MARKER);
+                yield new AddCommand(parseDeadline(commandParts));
+            }
+            case COMMAND_EVENT -> {
+                validateTaskMarkers(
+                        commandParts, COMMAND_EVENT,
+                        EVENT_START_DATE_MARKER, EVENT_END_DATE_MARKER,
+                        TASK_CLIENT_MARKER);
+                yield new AddCommand(parseEvent(commandParts));
+            }
             case COMMAND_FIND -> new FindCommand(
                     parseFindKeyword(commandParts));
             case COMMAND_FIND_DATE -> new FindDateCommand(
@@ -213,6 +229,13 @@ public class Parser {
                 commandParts, 1, EVENT_START_DATE_MARKER);
         validateEventStartArguments(commandParts, fromIndex);
 
+        int firstToIndex = findMarker(
+                commandParts, 1, EVENT_END_DATE_MARKER);
+        if (firstToIndex < fromIndex) {
+            throw new VerityException(
+                    "The /from marker must come before the /to marker.");
+        }
+
         int toIndex = findMarker(
                 commandParts, fromIndex + 1, EVENT_END_DATE_MARKER);
         validateEventEndArguments(commandParts, fromIndex, toIndex);
@@ -322,6 +345,53 @@ public class Parser {
         return markerIndex;
     }
 
+    private void validateTaskMarkers(String[] commandParts,
+            String commandName, String... allowedMarkers)
+            throws VerityException {
+        for (int i = 1; i < commandParts.length; i++) {
+            String commandPart = commandParts[i];
+            if (!commandPart.startsWith("/")) {
+                continue;
+            }
+
+            if (!isAllowedMarker(commandPart, allowedMarkers)) {
+                if (isKnownTaskMarker(commandPart)) {
+                    throw new VerityException(
+                            "The " + commandPart.toLowerCase(Locale.ROOT)
+                                    + " marker is not valid for a "
+                                    + commandName + " command.");
+                }
+                throw new VerityException(
+                        "Unknown task marker '" + commandPart + "'.");
+            }
+
+            if (!commandPart.equalsIgnoreCase(TASK_CLIENT_MARKER)
+                    && countMarker(commandParts, commandPart) > 1) {
+                throw new VerityException(
+                        "The " + commandPart.toLowerCase(Locale.ROOT)
+                                + " marker cannot be repeated.");
+            }
+        }
+    }
+
+    private boolean isAllowedMarker(String commandPart, String[] allowedMarkers) {
+        return Arrays.stream(allowedMarkers)
+                .anyMatch(commandPart::equalsIgnoreCase);
+    }
+
+    private boolean isKnownTaskMarker(String commandPart) {
+        return commandPart.equalsIgnoreCase(DEADLINE_DATE_MARKER)
+                || commandPart.equalsIgnoreCase(EVENT_START_DATE_MARKER)
+                || commandPart.equalsIgnoreCase(EVENT_END_DATE_MARKER)
+                || commandPart.equalsIgnoreCase(TASK_CLIENT_MARKER);
+    }
+
+    private long countMarker(String[] commandParts, String marker) {
+        return Arrays.stream(commandParts)
+                .filter(marker::equalsIgnoreCase)
+                .count();
+    }
+
     /**
      * Parses the keyword supplied to a find command.
      *
@@ -391,6 +461,9 @@ public class Parser {
                         "Use /client followed by one client ID.");
             }
             if (currentIndex + 1 >= commandParts.length) {
+                throw new VerityException("The /client value cannot be empty.");
+            }
+            if (commandParts[currentIndex + 1].startsWith("/")) {
                 throw new VerityException("The /client value cannot be empty.");
             }
             task.addClientId(commandParts[currentIndex + 1]);
