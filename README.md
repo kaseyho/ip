@@ -1,6 +1,6 @@
-# Verity project template
+# Verity
 
-This is a project template for a greenfield Java project. It's named after the eponymous minecraft mod, where a yellow talking ball follows you around and only chats the truth. Given below are instructions on how to use it.
+This is a greenfield Java project. It's named after the eponymous minecraft mod, where a yellow talking ball follows you around and only chats the truth. Given below are instructions on how to use it.
 
 ## Setting up in Intellij
 
