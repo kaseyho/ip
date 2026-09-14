@@ -1,5 +1,6 @@
 package verity.gui;
 
+import java.io.InputStream;
 import java.util.Objects;
 
 import javafx.animation.PauseTransition;
@@ -12,7 +13,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 import verity.Verity;
@@ -21,10 +26,23 @@ import verity.Verity;
  * Controls the main Verity GUI window.
  */
 public class MainWindow {
+    private static final String GOOD_BACKGROUND_RESOURCE =
+            "/images/mc_bg_good.png";
+    private static final String BAD_BACKGROUND_RESOURCE =
+            "/images/mc_bg_bad.png";
     private static final Duration EXIT_DELAY = Duration.millis(750);
+
+    private final Image goodBackground = loadImage(
+            GOOD_BACKGROUND_RESOURCE, "Missing good Verity background resource.");
+    private final Image badBackground = loadImage(
+            BAD_BACKGROUND_RESOURCE, "Missing bad Verity background resource.");
 
     @FXML
     private ScrollPane scrollPane;
+    @FXML
+    private StackPane conversationArea;
+    @FXML
+    private ImageView backgroundImage;
     @FXML
     private VBox dialogContainer;
     @FXML
@@ -42,6 +60,7 @@ public class MainWindow {
      */
     @FXML
     public void initialize() {
+        configureBackground();
         BooleanBinding isBlankInput = Bindings.createBooleanBinding(
                 () -> userInput.getText().isBlank(),
                 userInput.textProperty());
@@ -73,6 +92,7 @@ public class MainWindow {
         String commandType = verity.getCommandType();
         boolean isError = isErrorResponse(commandType);
 
+        setBackgroundImage(isError);
         hideEmptyState();
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input),
@@ -101,10 +121,67 @@ public class MainWindow {
         emptyState.setManaged(false);
     }
 
+    private void configureBackground() {
+        backgroundImage.setManaged(false);
+        backgroundImage.setImage(goodBackground);
+        backgroundImage.setPreserveRatio(true);
+        backgroundImage.setFitHeight(0.0);
+
+        Rectangle conversationClip = new Rectangle();
+        conversationClip.widthProperty().bind(conversationArea.widthProperty());
+        conversationClip.heightProperty().bind(conversationArea.heightProperty());
+        conversationArea.setClip(conversationClip);
+
+        backgroundImage.fitWidthProperty().bind(Bindings.createDoubleBinding(
+                this::getCoverWidth,
+                conversationArea.widthProperty(),
+                conversationArea.heightProperty(),
+                backgroundImage.imageProperty()));
+        backgroundImage.layoutXProperty().bind(Bindings.createDoubleBinding(
+                () -> (conversationArea.getWidth()
+                        - backgroundImage.getBoundsInLocal().getWidth()) / 2,
+                conversationArea.widthProperty(),
+                backgroundImage.boundsInLocalProperty()));
+        backgroundImage.layoutYProperty().bind(Bindings.createDoubleBinding(
+                () -> (conversationArea.getHeight()
+                        - backgroundImage.getBoundsInLocal().getHeight()) / 2,
+                conversationArea.heightProperty(),
+                backgroundImage.boundsInLocalProperty()));
+    }
+
+    private double getCoverWidth() {
+        Image image = backgroundImage.getImage();
+        if (image == null || image.getHeight() == 0) {
+            return 0.0;
+        }
+
+        double width = conversationArea.getWidth();
+        double height = conversationArea.getHeight();
+        double imageWidthAtRequiredHeight = height
+                * image.getWidth() / image.getHeight();
+        return Math.max(width, imageWidthAtRequiredHeight);
+    }
+
+    private void setBackgroundImage(boolean isError) {
+        backgroundImage.setImage(isError ? badBackground : goodBackground);
+    }
+
     private void closeAfterFarewell() {
         isClosing.set(true);
         PauseTransition exitDelay = new PauseTransition(EXIT_DELAY);
         exitDelay.setOnFinished(event -> Platform.exit());
         exitDelay.play();
+    }
+
+    private static Image loadImage(String resourcePath, String errorMessage) {
+        InputStream imageStream = Objects.requireNonNull(
+                MainWindow.class.getResourceAsStream(resourcePath), errorMessage);
+        Image image = new Image(imageStream);
+        if (image.isError()) {
+            throw new IllegalStateException(
+                    "Invalid background resource " + resourcePath + ".",
+                    image.getException());
+        }
+        return image;
     }
 }

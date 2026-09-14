@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
@@ -19,8 +20,15 @@
         <URL value="@../css/main.css" />
     </stylesheets>
     <center>
-        <StackPane styleClass="conversation-area">
+        <StackPane fx:id="conversationArea"
+                   styleClass="conversation-area">
             <children>
+                <ImageView fx:id="backgroundImage"
+                           managed="false"
+                           mouseTransparent="true"
+                           pickOnBounds="false"
+                           smooth="true"
+                           styleClass="background-image" />
                 <ScrollPane fx:id="scrollPane"
                             fitToWidth="true"
                             hbarPolicy="NEVER"

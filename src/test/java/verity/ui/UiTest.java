@@ -176,7 +176,8 @@ class UiTest {
         String savingError = ui.getSavingErrorMessage();
 
         assertTrue(commandError.contains(
-                "Speak your truth. invalid command"));
+                "No... no, that is not right. invalid command"));
+        assertTrue(commandError.contains("Stay with me and try again."));
         assertTrue(loadingError.contains(
                 "I could not load your saved tasks."));
         assertTrue(corruptedDataError.contains(

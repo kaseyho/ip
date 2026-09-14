@@ -9,6 +9,7 @@ import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -26,6 +27,8 @@ public class DialogBox extends HBox {
     private static final double VERITY_MAXIMUM_WIDTH = 680.0;
     private static final double VERITY_WIDTH_RATIO = 0.92;
     private static final Image VERITY_AVATAR = loadVerityAvatar();
+    private static final Image VERITY_ERROR_AVATAR = loadAvatar(
+            "/images/verity_red.jpeg", "Missing Verity error avatar resource.");
 
     @FXML
     private Region leadingSpacer;
@@ -105,7 +108,7 @@ public class DialogBox extends HBox {
         leadingSpacer.setVisible(false);
         trailingSpacer.setManaged(true);
         trailingSpacer.setVisible(true);
-        configureAvatar();
+        configureAvatar(isError ? VERITY_ERROR_AVATAR : VERITY_AVATAR);
         messageContainer.getStyleClass().add("verity-message-container");
         dialog.getStyleClass().add("verity-message");
         bindMaximumMessageWidth(VERITY_WIDTH_RATIO, VERITY_MAXIMUM_WIDTH);
@@ -124,26 +127,39 @@ public class DialogBox extends HBox {
                 widthProperty()));
     }
 
-    private void configureAvatar() {
+    private void configureAvatar(Image avatar) {
         displayPicture.setManaged(true);
         displayPicture.setVisible(true);
-        displayPicture.setImage(VERITY_AVATAR);
+        displayPicture.setImage(avatar);
         displayPicture.setFitWidth(AVATAR_SIZE);
         displayPicture.setFitHeight(AVATAR_SIZE);
         displayPicture.setPreserveRatio(true);
+        displayPicture.setViewport(getCenteredSquareViewport(avatar));
         displayPicture.getStyleClass().add("verity-avatar");
     }
 
     private static Image loadVerityAvatar() {
+        return loadAvatar(
+                "/images/verity_bot.png", "Missing Verity avatar resource.");
+    }
+
+    private static Image loadAvatar(String resourcePath, String errorMessage) {
         InputStream imageStream = Objects.requireNonNull(
-                DialogBox.class.getResourceAsStream(
-                        "/images/verity_bot.png"),
-                "Missing Verity avatar resource.");
+                DialogBox.class.getResourceAsStream(resourcePath), errorMessage);
         Image image = new Image(imageStream);
         if (image.isError()) {
             throw new IllegalStateException(
-                    "Invalid Verity avatar resource.", image.getException());
+                    "Invalid avatar resource " + resourcePath + ".",
+                    image.getException());
         }
         return image;
+    }
+
+    private static Rectangle2D getCenteredSquareViewport(Image image) {
+        double cropSize = Math.min(image.getWidth(), image.getHeight());
+        double horizontalOffset = (image.getWidth() - cropSize) / 2;
+        double verticalOffset = (image.getHeight() - cropSize) / 2;
+        return new Rectangle2D(
+                horizontalOffset, verticalOffset, cropSize, cropSize);
     }
 }

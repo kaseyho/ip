@@ -6,7 +6,7 @@
     -verity-accent-pressed: #b88718;
     -verity-border: #d4ae45;
     -verity-text: #3c300e;
-    -verity-muted-text: #6c5721;
+    -verity-muted-text: #6f6327;
     -fx-font-family: "System";
     -fx-font-size: 14px;
 }
@@ -17,6 +17,10 @@
 
 .conversation-area {
     -fx-background-color: transparent;
+}
+
+.background-image {
+    -fx-opacity: 0.52;
 }
 
 .scroll-pane,
@@ -64,6 +68,7 @@
 .empty-state-hint {
     -fx-translate-x: 25px;
     -fx-text-alignment: center;
+    -fx-font-weight: bold;
     -fx-text-fill: -verity-muted-text;
 }
 

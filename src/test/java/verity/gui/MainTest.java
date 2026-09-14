@@ -36,6 +36,15 @@ class MainTest {
 
     @Test
     void verityAvatar_isPackagedWithApplication() {
-        assertNotNull(Main.class.getResource("/images/verity_bot.png"));
+        assertAll(
+                () -> assertNotNull(
+                        Main.class.getResource("/images/verity_bot.png")),
+                () -> assertNotNull(
+                        Main.class.getResource("/images/verity_red.jpeg")),
+                () -> assertNotNull(
+                        Main.class.getResource("/images/mc_bg_good.png")),
+                () -> assertNotNull(
+                        Main.class.getResource("/images/mc_bg_bad.png"))
+        );
     }
 }

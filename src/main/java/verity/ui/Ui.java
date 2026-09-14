@@ -151,7 +151,8 @@ public class Ui {
      */
     public String getCommandErrorMessage(String message) {
         return HORIZONTAL_LINE
-                + "     Speak your truth. " + message + "\n"
+                + "     No... no, that is not right. " + message + "\n"
+                + "     Stay with me and try again.\n"
                 + HORIZONTAL_LINE;
     }
 
