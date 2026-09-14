@@ -1,58 +1,135 @@
 # Verity User Guide
 
-Verity manages tasks and client contact information through text commands. A
-task can have no clients, one client, or multiple clients.
+Verity is a task manager that helps you organise tasks and client contact
+information using simple text commands. Tasks can have no clients, one client,
+or multiple clients.
 
-## Error handling
+## Quick start
 
-Verity accepts extra spacing between parts of ordinary task commands. A blank
-command, unknown slash-prefixed task marker, repeated date marker, misplaced
-date marker, missing value, or invalid task or client number produces an error
-message without closing the application.
+Verity requires JDK 25.
 
-Dates must use `yyyy-MM-dd` and must exist on the calendar. An event's end date
-cannot be before its start date; a same-day event remains valid.
+From the project directory, run:
 
-Missing data files are treated as empty first-run data. If an existing task or
-client file cannot be read or contains invalid data, Verity identifies the data
-that could not be loaded and does not overwrite it. After the file is repaired,
-the next command retries loading it. Saves are written to a temporary file
-before the destination is replaced. If a save fails, Verity reports the error,
-restores its in-memory data, and continues accepting commands.
+```bash
+./gradlew run
+```
 
-## Adding a client
+On Windows, use:
 
-Use `client add` with a required `/name` field and any optional fields:
+```bat
+gradlew.bat run
+```
+
+Enter a command in the text box and press **Enter** or click **Send**.
+
+In the examples below, words written in `UPPER_CASE` are placeholders that you
+should replace with your own values.
+
+## Managing tasks
+
+### Adding a task
+
+Add a task without a date:
+
+```text
+todo DESCRIPTION
+```
+
+Example:
+
+```text
+todo Read project brief
+```
+
+Add a task with a deadline:
+
+```text
+deadline DESCRIPTION /by YYYY-MM-DD
+```
+
+Example:
+
+```text
+deadline Submit report /by 2026-09-30
+```
+
+Add an event with an inclusive date range:
+
+```text
+event DESCRIPTION /from YYYY-MM-DD /to YYYY-MM-DD
+```
+
+Example:
+
+```text
+event Project meeting /from 2026-09-20 /to 2026-09-20
+```
+
+Dates must use the `yyyy-MM-dd` format and must be valid calendar dates. An
+event's end date cannot be before its start date. Same-day events are allowed.
+
+### Viewing and updating tasks
+
+| Action | Command | Example |
+| --- | --- | --- |
+| List all tasks | `list` | `list` |
+| Mark a task as completed | `mark TASK_NUMBER` | `mark 1` |
+| Mark a task as incomplete | `unmark TASK_NUMBER` | `unmark 1` |
+| Delete a task | `delete TASK_NUMBER` | `delete 2` |
+| Find tasks by description | `find KEYWORD` | `find report` |
+| Find tasks occurring on a date | `finddate YYYY-MM-DD` | `finddate 2026-09-30` |
+| Exit Verity | `bye` | `bye` |
+
+Task numbers are displayed by the `list` command.
+
+Task-description searches are case-insensitive and match part of a description.
+For example, `find report` matches both `Write report` and `Submit REPORT`.
+
+`finddate` matches deadlines due on the given date and events whose date range
+includes that date.
+
+## Managing clients
+
+Client IDs such as `C001` are generated automatically. They are
+case-insensitive, permanent, and are not reused after deletion.
+
+### Adding a client
+
+A client must have a name. All other fields are optional:
+
+```text
+client add /name Alice Tan
+```
+
+You can provide several fields in the same command:
 
 ```text
 client add /name Alice Tan /phone +65 9123 4567 /email alice@example.com /company Acme /preferred email
 ```
 
-Available fields are `/name`, `/phone`, `/email`, `/address`, `/company`,
-`/notes`, and `/preferred`. Preferred contact accepts `phone`, `email`, or
-`other`.
-
-Field values are not trimmed automatically. Leading or trailing whitespace is
-rejected instead of silently removed.
+Available fields are:
 
 | Field | Requirement |
 | --- | --- |
-| Name | Required; 1 to 100 letters or spaces; no numbers or punctuation |
-| Phone | Optional; 3 to 32 characters; at least three digits; may contain spaces, `+`, `-`, `.`, `(`, and `)` |
-| Email | Optional; 3 to 254 characters; exactly one `@`, text on both sides, and no whitespace |
-| Address | Optional; at most 200 characters; no tabs or newlines |
-| Company | Optional; at most 100 characters; no tabs or newlines |
-| Notes | Optional; at most 2000 characters; newlines allowed; no tabs |
-| Preferred contact | Optional; `phone`, `email`, or `other` |
+| `/name` | Required; up to 100 letters or spaces |
+| `/phone` | Optional; 3–32 characters with at least three digits |
+| `/email` | Optional; up to 254 characters with exactly one `@` and no spaces |
+| `/address` | Optional; up to 200 characters |
+| `/company` | Optional; up to 100 characters |
+| `/notes` | Optional; up to 2000 characters |
+| `/preferred` | Optional; must be `phone`, `email`, or `other` |
 
-Non-empty phone numbers and email addresses must be unique. Email comparison
-is case-insensitive. Phone comparison ignores spaces, parentheses, periods,
-and hyphens. Duplicate values are rejected without creating or changing a
-client.
+Phone numbers and email addresses must be unique when supplied. Email
+comparison is case-insensitive. Phone comparison ignores spaces, parentheses,
+periods, and hyphens.
 
-Use `\n` in notes to enter a newline and `\\` to enter a literal backslash.
+Use `\n` in notes to enter a new line and `\\` to enter a literal backslash:
 
-## Listing and viewing clients
+```text
+client add /name Alice Tan /notes Called\nRequested a quotation
+```
+
+### Viewing and finding clients
 
 List all clients, sorted by name:
 
@@ -60,25 +137,21 @@ List all clients, sorted by name:
 client list
 ```
 
-View one client and its assigned tasks:
+View a client's details and assigned tasks:
 
 ```text
 client view C001
 ```
 
-Client IDs are generated automatically and are entered case-insensitively.
-
-## Finding clients
-
-Search client names using a case-insensitive partial match:
+Find clients using a case-insensitive partial name:
 
 ```text
 client find alice
 ```
 
-Only names are searched.
+Only client names are searched.
 
-## Editing a client
+### Editing a client
 
 Supply only the fields that should change:
 
@@ -86,7 +159,9 @@ Supply only the fields that should change:
 client edit C001 /phone +65 9876 5432 /preferred phone
 ```
 
-Omitted fields remain unchanged. Clear optional fields with `/clear`:
+Fields that are not supplied remain unchanged.
+
+Clear optional fields with `/clear`:
 
 ```text
 client edit C001 /clear phone /clear address
@@ -94,80 +169,84 @@ client edit C001 /clear phone /clear address
 
 The client ID and name cannot be cleared.
 
-## Associating clients with tasks
+### Associating clients with tasks
 
-Associate one client with one or more task numbers:
+Associate a client with one or more existing tasks:
+
+```text
+client associate C001 /task 1
+```
 
 ```text
 client associate C001 /task 1 /task 2
 ```
 
-Dissociate a client from tasks:
+Dissociate a client from one or more tasks:
 
 ```text
 client dissociate C001 /task 1
 ```
 
-A client cannot be associated with the same task twice. Ordinary dissociation
-cannot remove a task's last client. Existing unassigned tasks remain valid.
+A client cannot be associated with the same task twice. Verity will also
+prevent you from dissociating the last client assigned to a task.
 
-Client IDs can also be supplied when creating tasks. The marker is optional and
-may be repeated:
+### Assigning clients while adding tasks
+
+The `/client` marker is optional and can be repeated:
 
 ```text
 todo Prepare invoice /client C001 /client C002
+```
+
+```text
 deadline Submit proposal /by 2026-09-30 /client C001
+```
+
+```text
 event Client meeting /from 2026-09-20 /to 2026-09-20 /client C001
 ```
 
-## Deleting a client
+Every supplied client ID must already exist.
 
-First request deletion:
+### Deleting a client
+
+Request deletion with:
 
 ```text
 client delete C001
 ```
 
-Verity displays a warning without changing data. Confirm permanent deletion
-with:
+Verity will display a warning without changing any data. Confirm permanent
+deletion with:
 
 ```text
 client delete C001 confirm
 ```
 
-Deleting a client never deletes tasks. Verity removes the client's active task
-associations and adds a note such as:
+Deleting a client does not delete their tasks. Verity removes the client's
+active task associations and adds a former-client note to each affected task.
 
-```text
-Former client Alice Tan (C001) was deleted.
-```
+## Errors and saved data
 
-## Data files
+If a command is invalid, Verity explains the problem and remains open so that
+you can correct the command and try again.
 
-Tasks remain in `data/verity.txt`. Clients are stored separately in
-`data/clients.txt`, which is created on the first client change. Existing task
-files remain compatible.
+Common causes of errors include:
 
-The first line of `clients.txt` stores the next numeric ID. Each remaining line
-stores a tab-separated client record in this order: record type, ID, name,
-phone, email, address, company, notes, and preferred contact. For example:
+- missing descriptions, dates, task numbers, or client IDs;
+- invalid or repeated command markers;
+- invalid calendar dates;
+- task or client numbers that do not exist;
+- duplicate phone numbers or email addresses; and
+- event end dates that are earlier than their start dates.
 
-```text
-NEXT_ID	2
-C	C001	Alice Tan	+65 9123 4567	alice@example.com		Acme	Called\nRequested quote	email
-```
+Tasks are saved automatically in `data/verity.txt`. Clients are saved in
+`data/clients.txt`.
 
-The next-ID value is always greater than every stored ID, so deleted IDs are
-not reused.
+Missing data files are treated as empty first-run data. If existing data cannot
+be read or is corrupted, Verity reports the problem without overwriting the
+affected file. After repairing the file, enter another command to retry loading
+it.
 
-Newly saved task lines append two tab-separated fields to the existing task
-format: comma-separated active client IDs and escaped former-client notes.
-Legacy task lines without these fields continue to load as unassigned tasks.
-Once tasks are saved again, they use the extended format. A task file that
-references a client missing from `clients.txt` is treated as corrupted data.
-
-In client and task metadata, `\n` represents a newline and `\\` represents a
-literal backslash.
-
-If saved client data is corrupted, Verity reports the corrupted data and does
-not process commands.
+If saving fails, Verity reports the error, restores the previous data, and
+continues accepting commands.
