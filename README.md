@@ -62,3 +62,8 @@ event Client meeting /from 2026-09-20 /to 2026-09-20 /client C001
 
 See the [user guide](docs/README.md) for field validation, command details,
 and deletion behavior.
+
+## AI Declaration
+I declare that I used Chatgpt 5.6 Luna XHigh on Codex. I used AI whenever the
+project tasks gave the option to use AI to perform the tasks. Specifically,
+I followed the steps outlined in the AI Guidance boxes in the Projects page.
