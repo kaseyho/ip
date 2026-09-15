@@ -6,19 +6,53 @@ or multiple clients.
 
 ## Quick start
 
-Verity requires JDK 25.
+Verity requires Java 25.
+
+### Running the JAR file
+
+If you have been given `verity.jar`, open a terminal in the folder containing
+the JAR and run:
+
+```bash
+java -jar verity.jar
+```
+
+Keep the terminal open while using Verity. The application stores its data in
+a `data` folder relative to the directory from which it is launched.
+
+### Building the JAR from source
 
 From the project directory, run:
 
 ```bash
-./gradlew run
+./gradlew shadowJar
 ```
 
 On Windows, use:
 
 ```bat
-gradlew.bat run
+gradlew.bat shadowJar
 ```
+
+The generated JAR will be located at:
+
+```text
+build/libs/verity.jar
+```
+
+Run it from the project directory with:
+
+```bash
+java -jar build/libs/verity.jar
+```
+
+On Windows, use:
+
+```bat
+java -jar build\libs\verity.jar
+```
+
+### Using Verity
 
 Enter a command in the text box and press **Enter** or click **Send**.
 
