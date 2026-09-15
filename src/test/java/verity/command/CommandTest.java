@@ -38,6 +38,7 @@ class CommandTest {
         assertFalse(new FindCommand("book").isExit());
         assertFalse(new FindDateCommand(
                 LocalDate.of(2026, 8, 10)).isExit());
+        assertFalse(new HelpCommand().isExit());
         assertFalse(new ListCommand().isExit());
         assertFalse(new MarkCommand(0).isExit());
         assertFalse(new UnmarkCommand(0).isExit());
@@ -170,5 +171,20 @@ class CommandTest {
 
         assertTrue(response.contains("Bye. Hope to see you again soon!"));
         assertEquals(0, tasks.size());
+    }
+
+    @Test
+    void helpCommand_execute_returnsHelpWithoutChangingTasks() {
+        TaskList tasks = new TaskList(new Todo("read book"));
+        Path dataFile = temporaryDirectory.resolve("tasks.txt");
+        CommandContext context = new CommandContext(
+                tasks, new Ui(), new Storage(dataFile));
+
+        String response = new HelpCommand().execute(context);
+
+        assertTrue(response.contains("Verity command guide"));
+        assertEquals(1, tasks.size());
+        assertFalse(Files.exists(dataFile));
+        assertFalse(Files.exists(dataFile.resolveSibling("clients.txt")));
     }
 }

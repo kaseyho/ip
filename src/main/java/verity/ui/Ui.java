@@ -71,6 +71,45 @@ public class Ui {
     }
 
     /**
+     * Returns the command guide.
+     *
+     * @return Formatted command guide.
+     */
+    public String getHelpMessage() {
+        return HORIZONTAL_LINE
+                + "    Verity command guide\n\n"
+                + "    Tasks:\n"
+                + "      todo DESCRIPTION [/client CLIENT_ID ...]\n"
+                + "      deadline DESCRIPTION /by YYYY-MM-DD"
+                + " [/client CLIENT_ID ...]\n"
+                + "      event DESCRIPTION /from YYYY-MM-DD /to YYYY-MM-DD"
+                + " [/client CLIENT_ID ...]\n"
+                + "      list\n"
+                + "      mark TASK_NUMBER\n"
+                + "      unmark TASK_NUMBER\n"
+                + "      delete TASK_NUMBER\n"
+                + "      find KEYWORD\n"
+                + "      finddate YYYY-MM-DD\n\n"
+                + "    Clients:\n"
+                + "      client add /name NAME [FIELDS]\n"
+                + "      client list\n"
+                + "      client view CLIENT_ID\n"
+                + "      client find NAME\n"
+                + "      client edit CLIENT_ID /FIELD VALUE ...\n"
+                + "      client edit CLIENT_ID /clear FIELD ...\n"
+                + "      client associate CLIENT_ID /task TASK_NUMBER ...\n"
+                + "      client dissociate CLIENT_ID /task TASK_NUMBER ...\n"
+                + "      client delete CLIENT_ID [confirm]\n\n"
+                + "    General:\n"
+                + "      help\n"
+                + "      bye\n\n"
+                + "    Optional client fields: /phone, /email, /address,\n"
+                + "    /company, /notes, and /preferred. Use /clear FIELD\n"
+                + "    with client edit to clear an optional field.\n"
+                + HORIZONTAL_LINE;
+    }
+
+    /**
      * Returns the response for an added task.
      *
      * @param task Added task.

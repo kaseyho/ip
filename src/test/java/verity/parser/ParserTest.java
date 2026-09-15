@@ -21,6 +21,7 @@ import verity.command.DeleteCommand;
 import verity.command.ExitCommand;
 import verity.command.FindCommand;
 import verity.command.FindDateCommand;
+import verity.command.HelpCommand;
 import verity.command.ListCommand;
 import verity.command.MarkCommand;
 import verity.command.UnmarkCommand;
@@ -49,6 +50,24 @@ class ParserTest {
 
         assertInstanceOf(ExitCommand.class, command);
         assertTrue(command.isExit());
+    }
+
+    @Test
+    void parse_helpCommand_returnsHelpCommand() throws VerityException {
+        Command command = parser.parse("help", 0);
+
+        assertInstanceOf(HelpCommand.class, command);
+    }
+
+    @Test
+    void parse_helpWithArgument_throwsVerityException() {
+        VerityException exception = assertThrows(
+                VerityException.class,
+                () -> parser.parse("help tasks", 0));
+
+        assertEquals(
+                "The help command does not accept arguments.",
+                exception.getMessage());
     }
 
     @Test

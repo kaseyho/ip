@@ -13,6 +13,7 @@ import verity.command.DeleteCommand;
 import verity.command.ExitCommand;
 import verity.command.FindCommand;
 import verity.command.FindDateCommand;
+import verity.command.HelpCommand;
 import verity.command.ListCommand;
 import verity.command.MarkCommand;
 import verity.command.UnmarkCommand;
@@ -41,6 +42,7 @@ public class Parser {
     private static final String COMMAND_EVENT = "event";
     private static final String COMMAND_FIND = "find";
     private static final String COMMAND_FIND_DATE = "finddate";
+    private static final String COMMAND_HELP = "help";
     private static final String COMMAND_CLIENT = "client";
 
     private final SavedTaskParser savedTaskParser =
@@ -108,6 +110,10 @@ public class Parser {
                     parseFindKeyword(commandParts));
             case COMMAND_FIND_DATE -> new FindDateCommand(
                     parseFindDate(commandParts));
+            case COMMAND_HELP -> {
+                requireNoArguments(commandParts, COMMAND_HELP);
+                yield new HelpCommand();
+            }
             case COMMAND_CLIENT -> clientCommandParser.parse(
                     fullCommand, taskCount);
             default -> throw new VerityException(

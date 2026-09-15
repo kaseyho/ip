@@ -11,16 +11,21 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Modality;
 import javafx.util.Duration;
 
 import verity.Verity;
+import verity.command.HelpCommand;
 
 /**
  * Controls the main Verity GUI window.
@@ -90,6 +95,12 @@ public class MainWindow {
 
         String response = verity.getResponse(input);
         String commandType = verity.getCommandType();
+        if (isHelpCommand(commandType)) {
+            userInput.clear();
+            showHelpWindow(formatResponseForGui(response));
+            userInput.requestFocus();
+            return;
+        }
         boolean isError = isErrorResponse(commandType);
 
         setBackgroundImage(isError);
@@ -112,8 +123,29 @@ public class MainWindow {
         return commandType == null;
     }
 
+    static boolean isHelpCommand(String commandType) {
+        return HelpCommand.class.getSimpleName().equals(commandType);
+    }
+
     static String formatResponseForGui(String response) {
         return response.replaceAll("(?m)^_+\\R", "").trim();
+    }
+
+    private void showHelpWindow(String helpText) {
+        TextArea helpTextArea = new TextArea(helpText);
+        helpTextArea.setEditable(false);
+        helpTextArea.setWrapText(true);
+        helpTextArea.setPrefColumnCount(70);
+        helpTextArea.setPrefRowCount(28);
+
+        Dialog<Void> helpDialog = new Dialog<>();
+        helpDialog.initOwner(userInput.getScene().getWindow());
+        helpDialog.initModality(Modality.WINDOW_MODAL);
+        helpDialog.setTitle("Verity Help");
+        helpDialog.setResizable(true);
+        helpDialog.getDialogPane().setContent(helpTextArea);
+        helpDialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        helpDialog.showAndWait();
     }
 
     private void hideEmptyState() {

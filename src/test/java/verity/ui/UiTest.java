@@ -55,6 +55,40 @@ class UiTest {
     }
 
     @Test
+    void getHelpMessage_returnsAllCommandSyntaxes() {
+        String response = new Ui().getHelpMessage();
+
+        List<String> expectedCommandSyntaxes = List.of(
+                "todo DESCRIPTION [/client CLIENT_ID ...]",
+                "deadline DESCRIPTION /by YYYY-MM-DD [/client CLIENT_ID ...]",
+                "event DESCRIPTION /from YYYY-MM-DD /to YYYY-MM-DD"
+                        + " [/client CLIENT_ID ...]",
+                "list",
+                "mark TASK_NUMBER",
+                "unmark TASK_NUMBER",
+                "delete TASK_NUMBER",
+                "find KEYWORD",
+                "finddate YYYY-MM-DD",
+                "client add /name NAME [FIELDS]",
+                "client list",
+                "client view CLIENT_ID",
+                "client find NAME",
+                "client edit CLIENT_ID /FIELD VALUE ...",
+                "client edit CLIENT_ID /clear FIELD ...",
+                "client associate CLIENT_ID /task TASK_NUMBER ...",
+                "client dissociate CLIENT_ID /task TASK_NUMBER ...",
+                "client delete CLIENT_ID [confirm]",
+                "help",
+                "bye");
+
+        for (String commandSyntax : expectedCommandSyntaxes) {
+            assertTrue(
+                    response.contains(commandSyntax),
+                    () -> "Missing help entry: " + commandSyntax);
+        }
+    }
+
+    @Test
     void getTaskAddedMessage_returnsTaskAndCount() {
         String response = new Ui().getTaskAddedMessage(
                 new Todo("read book"), 1);

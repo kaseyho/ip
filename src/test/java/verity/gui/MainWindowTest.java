@@ -31,4 +31,11 @@ class MainWindowTest {
     void isErrorResponse_successfulCommandType_returnsFalse() {
         assertFalse(MainWindow.isErrorResponse("ListCommand"));
     }
+
+    @Test
+    void isHelpCommand_onlyHelpCommand_returnsTrue() {
+        assertTrue(MainWindow.isHelpCommand("HelpCommand"));
+        assertFalse(MainWindow.isHelpCommand("ListCommand"));
+        assertFalse(MainWindow.isHelpCommand(null));
+    }
 }
